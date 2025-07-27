@@ -1,6 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[codz]
+*.py[cod]
 *$py.class
 
 # C extensions
@@ -46,7 +46,7 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
-*.py.cover
+*.py,cover
 .hypothesis/
 .pytest_cache/
 cover/
@@ -94,35 +94,20 @@ ipython_config.py
 #   install all needed dependencies.
 #Pipfile.lock
 
-# UV
-#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#uv.lock
-
 # poetry
 #   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
 #   This is especially recommended for binary packages to ensure reproducibility, and is more
 #   commonly ignored for libraries.
 #   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
 #poetry.lock
-#poetry.toml
 
 # pdm
 #   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#   pdm recommends including project-wide configuration in pdm.toml, but excluding .pdm-python.
-#   https://pdm-project.org/en/latest/usage/project/#working-with-version-control
 #pdm.lock
-#pdm.toml
-.pdm-python
-.pdm-build/
-
-# pixi
-#   Similar to Pipfile.lock, it is generally recommended to include pixi.lock in version control.
-#pixi.lock
-#   Pixi creates a virtual environment in the .pixi directory, just like venv module creates one
-#   in the .venv directory. It is recommended not to include this directory in version control.
-.pixi
+#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
+#   in version control.
+#   https://pdm.fming.dev/#use-with-ide
+.pdm.toml
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
@@ -136,7 +121,6 @@ celerybeat.pid
 
 # Environments
 .env
-.envrc
 .venv
 env/
 venv/
@@ -170,38 +154,202 @@ cython_debug/
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+#  be added to the global gitignore or merged into this project gitignore.  For a PyCharm
+#  project, it is recommended to include the .idea directory in version control.
+.idea/
 
-# Abstra
-# Abstra is an AI-powered process automation framework.
-# Ignore directories containing user credentials, local state, and settings.
-# Learn more at https://abstra.io/docs
-.abstra/
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
 
-# Visual Studio Code
-#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
-#  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
-#  and can be added to the global gitignore or merged into this file. However, if you prefer, 
-#  you could uncomment the following to ignore the entire vscode folder
-# .vscode/
+# Local History for Visual Studio Code
+.history/
 
-# Ruff stuff:
+# Built Visual Studio Code Extensions
+*.vsix
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.tmp
+*.temp
+
+# Linux
+*~
+
+# Project-specific directories and files
+data/
+!data/.gitkeep
+cache/
+!cache/.gitkeep
+logs/
+!logs/.gitkeep
+outputs/
+!outputs/.gitkeep
+checkpoints/
+!checkpoints/.gitkeep
+models/
+!models/.gitkeep
+results/
+!results/.gitkeep
+experiments/
+!experiments/.gitkeep
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# ML/Data Science specific
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.joblib
+*.model
+*.weights
+*.pt
+*.pth
+*.ckpt
+*.npz
+
+# Jupyter specific
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Tensorboard logs
+runs/
+tensorboard_logs/
+
+# Weights & Biases
+wandb/
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# DVC
+.dvc/
+
+# Hydra
+outputs/
+multirun/
+.hydra/
+
+# JAX specific
+*.jaxlib_cache/
+
+# Profiling
+*.prof
+*.profile
+*.cprof
+
+# Security
+*.pem
+*.key
+*.crt
+*.p12
+secrets.yaml
+secrets.yml
+.secrets
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.backup
+*.bak
+
+# Archive files
+*.zip
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.rar
+*.7z
+
+# OS generated files
+Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# IDE and editor files
+*.sublime-project
+*.sublime-workspace
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentation build
+docs/_build/
+docs/build/
+site/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Test coverage
+.coverage
+.coverage.*
+htmlcov/
+
+# Linting and formatting
 .ruff_cache/
+.black_cache/
+.flake8_cache/
 
-# PyPI configuration file
-.pypirc
+# Pre-commit
+.pre-commit-config.yaml.bak
 
-# Cursor
-#  Cursor is an AI-powered code editor. `.cursorignore` specifies files/directories to
-#  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data
-#  refer to https://docs.cursor.com/context/ignore-files
-.cursorignore
-.cursorindexingignore
+# Node.js (for documentation tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Marimo
-marimo/_static/
-marimo/_lsp/
-__marimo__/
+# Local configuration
+local_config.py
+config_local.py
+.env.local
+.env.*.local
+
+# Docker
+.dockerignore
+
+# Kubernetes
+*.kubeconfig
+
+# Cloud credentials
+gcloud/
+.aws/
+.azure/
+
+# Custom scripts and notebooks for experimentation
+playground/
+sandbox/
+scratch/
+notebooks/scratch/

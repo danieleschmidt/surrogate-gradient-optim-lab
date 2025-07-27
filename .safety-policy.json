@@ -1,0 +1,28 @@
+{
+  "security": {
+    "ignore-cvss-severity-below": 7.0,
+    "ignore-cvss-unknown-severity": false,
+    "continue-on-vulnerability-error": false
+  },
+  "alert": {
+    "ignore-unpinned-requirements": false
+  },
+  "ignore": {
+    "vulnerabilities": [
+    ],
+    "packages": [
+    ]
+  },
+  "report": {
+    "only-report": false,
+    "output": [
+      {
+        "report-type": "json",
+        "file": "safety-report.json"
+      },
+      {
+        "report-type": "screen"
+      }
+    ]
+  }
+}

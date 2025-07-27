@@ -1,0 +1,111 @@
+{
+  "name": "Surrogate Gradient Optimization Lab",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true,
+      "upgradePackages": true,
+      "username": "vscode",
+      "uid": "1000",
+      "gid": "1000"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.9",
+      "installTools": true,
+      "optimize": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "ppa": true,
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "enableNonRootDocker": true,
+      "moby": true
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-python.flake8",
+        "ms-python.isort",
+        "ms-toolsai.jupyter",
+        "ms-toolsai.vscode-jupyter-cell-tags",
+        "ms-toolsai.vscode-jupyter-slideshow",
+        "charliermarsh.ruff",
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "ms-vscode.vscode-markdown",
+        "DavidAnson.vscode-markdownlint",
+        "streetsidesoftware.code-spell-checker",
+        "ms-vscode.test-adapter-converter",
+        "littlefoxteam.vscode-python-test-adapter",
+        "ms-vscode.makefile-tools",
+        "ms-azuretools.vscode-docker",
+        "GitHub.vscode-pull-request-github",
+        "GitHub.copilot",
+        "tamasfe.even-better-toml",
+        "njpwerner.autodocstring",
+        "ms-python.mypy-type-checker"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": false,
+        "python.linting.flake8Enabled": true,
+        "python.linting.mypyEnabled": true,
+        "python.formatting.provider": "black",
+        "python.formatting.blackArgs": ["--line-length=88"],
+        "python.sortImports.args": ["--profile=black"],
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.pytestArgs": ["tests/"],
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": true
+        },
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "jupyter.askForKernelRestart": false,
+        "jupyter.interactiveWindow.cellMarker.codeRegex": "^# %%|^#%%|^# <codecell>|^# In\\[([0-9]+)\\]:",
+        "markdown.extension.toc.levels": "2..6",
+        "cSpell.words": [
+          "surrogate",
+          "optim",
+          "jax",
+          "numpy",
+          "scipy",
+          "sklearn",
+          "matplotlib",
+          "plotly",
+          "pytest",
+          "codecov",
+          "mypy",
+          "ruff",
+          "terragon"
+        ]
+      }
+    }
+  },
+  "forwardPorts": [8000, 8080, 8888, 6006],
+  "postCreateCommand": "pip install -e '.[dev]' && pre-commit install",
+  "remoteUser": "vscode",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localWorkspaceFolder}/.git,target=/workspace/.git,type=bind,consistency=cached",
+    "source=surrogate-optim-vscode-server,target=/home/vscode/.vscode-server,type=volume"
+  ]
+}

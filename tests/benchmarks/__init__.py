@@ -1,0 +1,1 @@
+"""Benchmark tests for Surrogate Gradient Optimization Lab."""
