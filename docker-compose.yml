@@ -1,0 +1,218 @@
+version: '3.8'
+
+services:
+  # Development environment
+  surrogate-optim-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: surrogate-optim-dev
+    volumes:
+      - .:/workspace:cached
+      - surrogate-optim-venv:/workspace/.venv
+      - surrogate-optim-cache:/home/appuser/.cache
+    ports:
+      - "8888:8888"  # Jupyter
+      - "8080:8080"  # Dashboard
+      - "6006:6006"  # TensorBoard
+      - "8000:8000"  # API server
+    environment:
+      - ENVIRONMENT=development
+      - PYTHONPATH=/workspace
+      - JAX_PLATFORM_NAME=cpu
+      - JAX_ENABLE_X64=true
+    env_file:
+      - .env
+    working_dir: /workspace
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+    networks:
+      - surrogate-optim-network
+
+  # Production environment
+  surrogate-optim-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: surrogate-optim-prod
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - JAX_PLATFORM_NAME=cpu
+      - LOG_LEVEL=INFO
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import surrogate_optim; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - surrogate-optim-network
+
+  # GPU-enabled environment
+  surrogate-optim-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: gpu
+    container_name: surrogate-optim-gpu
+    ports:
+      - "8001:8000"
+    environment:
+      - ENVIRONMENT=production
+      - JAX_PLATFORM_NAME=gpu
+      - CUDA_VISIBLE_DEVICES=0
+    env_file:
+      - .env
+    restart: unless-stopped
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    healthcheck:
+      test: ["CMD", "python", "-c", "import jax; print(f'JAX devices: {jax.devices()}'); import surrogate_optim; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - surrogate-optim-network
+    profiles:
+      - gpu
+
+  # Jupyter Lab service
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: surrogate-optim-jupyter
+    volumes:
+      - .:/workspace:cached
+      - surrogate-optim-notebooks:/workspace/notebooks
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=surrogate-optim-token
+      - PYTHONPATH=/workspace
+    working_dir: /workspace
+    command: >
+      bash -c "
+        pip install -e . &&
+        jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+        --NotebookApp.token=surrogate-optim-token
+        --NotebookApp.notebook_dir=/workspace
+      "
+    networks:
+      - surrogate-optim-network
+    profiles:
+      - jupyter
+
+  # Database for experiment tracking (optional)
+  postgres:
+    image: postgres:14-alpine
+    container_name: surrogate-optim-postgres
+    environment:
+      - POSTGRES_DB=surrogate_optim
+      - POSTGRES_USER=surrogate_user
+      - POSTGRES_PASSWORD=surrogate_pass
+    volumes:
+      - surrogate-optim-postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - surrogate-optim-network
+    profiles:
+      - database
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: surrogate-optim-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - surrogate-optim-redis-data:/data
+    networks:
+      - surrogate-optim-network
+    profiles:
+      - cache
+
+  # MLflow tracking server (optional)
+  mlflow:
+    image: python:3.9-slim
+    container_name: surrogate-optim-mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=postgresql://surrogate_user:surrogate_pass@postgres:5432/surrogate_optim
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/mlflow/artifacts
+    volumes:
+      - surrogate-optim-mlflow-artifacts:/mlflow/artifacts
+    command: >
+      bash -c "
+        pip install mlflow psycopg2-binary &&
+        mlflow server
+        --backend-store-uri postgresql://surrogate_user:surrogate_pass@postgres:5432/surrogate_optim
+        --default-artifact-root /mlflow/artifacts
+        --host 0.0.0.0
+        --port 5000
+      "
+    depends_on:
+      - postgres
+    networks:
+      - surrogate-optim-network
+    profiles:
+      - mlflow
+
+  # TensorBoard service (optional)
+  tensorboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: surrogate-optim-tensorboard
+    ports:
+      - "6006:6006"
+    volumes:
+      - .:/workspace:cached
+      - surrogate-optim-tensorboard-logs:/workspace/logs
+    command: >
+      bash -c "
+        pip install tensorboard &&
+        tensorboard --logdir=/workspace/logs --host=0.0.0.0 --port=6006
+      "
+    networks:
+      - surrogate-optim-network
+    profiles:
+      - tensorboard
+
+# Networks
+networks:
+  surrogate-optim-network:
+    driver: bridge
+
+# Volumes
+volumes:
+  surrogate-optim-venv:
+    driver: local
+  surrogate-optim-cache:
+    driver: local
+  surrogate-optim-notebooks:
+    driver: local
+  surrogate-optim-postgres-data:
+    driver: local
+  surrogate-optim-redis-data:
+    driver: local
+  surrogate-optim-mlflow-artifacts:
+    driver: local
+  surrogate-optim-tensorboard-logs:
+    driver: local
