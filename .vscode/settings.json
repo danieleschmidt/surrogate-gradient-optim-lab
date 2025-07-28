@@ -1,0 +1,210 @@
+{
+  "python.defaultInterpreterPath": "./venv/bin/python",
+  "python.terminal.activateEnvironment": true,
+  
+  // Linting and Type Checking
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": false,
+  "python.linting.mypyEnabled": true,
+  "python.linting.banditEnabled": true,
+  "ruff.enable": true,
+  "ruff.lint.enable": true,
+  "ruff.format.enable": true,
+  
+  // Formatting
+  "python.formatting.provider": "black",
+  "python.formatting.blackArgs": ["--line-length=88"],
+  "python.sortImports.args": ["--profile=black"],
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
+  "editor.formatOnType": false,
+  
+  // Code Actions
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true,
+    "source.fixAll.ruff": true
+  },
+  
+  // Testing
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": [
+    "tests/",
+    "-v",
+    "--tb=short"
+  ],
+  "python.testing.autoTestDiscoverOnSaveEnabled": true,
+  
+  // File Management
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  
+  // Editor Settings
+  "editor.rulers": [88],
+  "editor.wordWrap": "bounded",
+  "editor.wordWrapColumn": 88,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": true,
+  
+  // Git
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  "git.autofetch": true,
+  
+  // Jupyter
+  "jupyter.askForKernelRestart": false,
+  "jupyter.interactiveWindow.cellMarker.codeRegex": "^# %%|^#%%|^# <codecell>|^# In\\[([0-9]+)\\]:",
+  "jupyter.sendSelectionToInteractiveWindow": true,
+  "notebook.cellToolbarLocation": {
+    "default": "right",
+    "jupyter-notebook": "left"
+  },
+  
+  // Markdown
+  "markdown.extension.toc.levels": "2..6",
+  "markdownlint.config": {
+    "MD013": false,
+    "MD033": false
+  },
+  
+  // Spell Checker
+  "cSpell.words": [
+    "surrogate",
+    "optim",
+    "jax",
+    "jaxlib",
+    "numpy",
+    "scipy",
+    "sklearn",
+    "matplotlib",
+    "plotly",
+    "pytest",
+    "codecov",
+    "mypy",
+    "ruff",
+    "terragon",
+    "gaussian",
+    "hyperparameters",
+    "autodiff",
+    "gradients",
+    "optimization",
+    "benchmarking",
+    "preprocessing",
+    "tensorboard",
+    "wandb",
+    "mlflow",
+    "devcontainer",
+    "dockerfile",
+    "pyproject",
+    "toml",
+    "yaml",
+    "yml"
+  ],
+  
+  // File Associations
+  "files.associations": {
+    "*.yml": "yaml",
+    "*.yaml": "yaml",
+    "Dockerfile*": "dockerfile",
+    "*.toml": "toml",
+    "*.md": "markdown"
+  },
+  
+  // Search
+  "search.exclude": {
+    "**/.git": true,
+    "**/.vscode": true,
+    "**/node_modules": true,
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/build": true,
+    "**/dist": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/htmlcov": true,
+    "**/logs": true,
+    "**/data": true,
+    "**/cache": true,
+    "**/checkpoints": true,
+    "**/outputs": true,
+    "**/results": true,
+    "**/wandb": true,
+    "**/mlruns": true
+  },
+  
+  // Terminal
+  "terminal.integrated.env.linux": {
+    "PYTHONPATH": "${workspaceFolder}"
+  },
+  "terminal.integrated.env.osx": {
+    "PYTHONPATH": "${workspaceFolder}"
+  },
+  "terminal.integrated.env.windows": {
+    "PYTHONPATH": "${workspaceFolder}"
+  },
+  
+  // Performance
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.extraPaths": [],
+  "python.analysis.typeCheckingMode": "basic",
+  
+  // Extensions
+  "python.experiments.enabled": false,
+  
+  // Docker
+  "docker.attachShellCommand.linuxContainer": "/bin/bash",
+  
+  // Workspace Settings
+  "workbench.colorTheme": "Default Dark+",
+  "workbench.iconTheme": "vs-seti",
+  
+  // Miscellaneous
+  "problems.decorations.enabled": true,
+  "breadcrumbs.enabled": true,
+  "outline.showVariables": false,
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  
+  // Language specific settings
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.rulers": [88]
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.wordWrap": "bounded",
+    "editor.wordWrapColumn": 100,
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off"
+    }
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  }
+}
