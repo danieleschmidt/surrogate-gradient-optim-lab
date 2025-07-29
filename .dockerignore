@@ -1,0 +1,212 @@
+# Git and version control
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# Documentation
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE
+LICENSE_HEADER.txt
+docs/
+*.md
+
+# Python cache and build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+nosetests.xml
+pytest.xml
+pytest-*.xml
+
+# Development tools
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+.black/
+.isort.cfg
+.pre-commit-config.yaml
+.secrets.baseline
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Data and model files
+data/
+!data/.gitkeep
+cache/
+!cache/.gitkeep
+logs/
+!logs/.gitkeep
+outputs/
+!outputs/.gitkeep
+checkpoints/
+!checkpoints/.gitkeep
+models/
+!models/.gitkeep
+results/
+!results/.gitkeep
+experiments/
+!experiments/.gitkeep
+
+# ML/AI specific
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.joblib
+*.model
+*.weights
+*.pt
+*.pth
+*.ckpt
+*.npz
+wandb/
+mlruns/
+mlartifacts/
+runs/
+tensorboard_logs/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.swp
+*.swo
+
+# Security sensitive files
+*.key
+*.pem
+*.crt
+*.p12
+secrets.yaml
+secrets.yml
+.secrets
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Archive files
+*.zip
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.rar
+*.7z
+
+# Node.js (for documentation tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Profiling
+*.prof
+*.profile
+*.cprof
+
+# Local configuration files
+local_config.py
+config_local.py
+.env.local
+.env.*.local
+
+# Container-specific excludes
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD files that shouldn't be in containers
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+azure-pipelines.yml
+Jenkinsfile
+
+# Package management
+requirements*.txt
+pip-tools/
+*.lock
+
+# Cloud provider configs
+.aws/
+.azure/
+gcloud/
+*.kubeconfig
+
+# Development scripts and playground
+scripts/dev/
+playground/
+sandbox/
+scratch/
+notebooks/scratch/
+
+# OS generated files
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+ehthumbs_vista.db
+
+# Backup files
+*~
+*.orig
+*.rej
