@@ -1,0 +1,44 @@
+# Global owners - these people will be requested for review on all PRs
+* @danieleschmidt @terragon-labs/core-team
+
+# Documentation
+/docs/ @danieleschmidt @terragon-labs/docs-team
+*.md @danieleschmidt @terragon-labs/docs-team
+/README.md @danieleschmidt @terragon-labs/core-team
+
+# Core algorithm implementations
+/surrogate_optim/ @danieleschmidt @terragon-labs/ml-team
+/surrogate_optim/models/ @danieleschmidt @terragon-labs/ml-team
+/surrogate_optim/optimizers/ @danieleschmidt @terragon-labs/ml-team
+
+# Infrastructure and operations
+/.github/ @danieleschmidt @terragon-labs/devops-team
+/Dockerfile @danieleschmidt @terragon-labs/devops-team
+/docker-compose.yml @danieleschmidt @terragon-labs/devops-team
+/.dockerignore @danieleschmidt @terragon-labs/devops-team
+
+# Observability and monitoring
+/surrogate_optim/observability/ @danieleschmidt @terragon-labs/sre-team
+/surrogate_optim/monitoring/ @danieleschmidt @terragon-labs/sre-team
+/surrogate_optim/health/ @danieleschmidt @terragon-labs/sre-team
+
+# Testing and quality assurance
+/tests/ @danieleschmidt @terragon-labs/qa-team
+/tests/benchmarks/ @danieleschmidt @terragon-labs/performance-team
+/pyproject.toml @danieleschmidt @terragon-labs/core-team
+
+# Security configurations
+/bandit.yml @danieleschmidt @terragon-labs/security-team
+/.secrets.baseline @danieleschmidt @terragon-labs/security-team
+/.safety-policy.json @danieleschmidt @terragon-labs/security-team
+/.pre-commit-config.yaml @danieleschmidt @terragon-labs/security-team
+
+# Build and deployment
+/scripts/ @danieleschmidt @terragon-labs/devops-team
+/Makefile @danieleschmidt @terragon-labs/devops-team
+
+# Project governance
+/LICENSE @danieleschmidt @terragon-labs/legal-team
+/CODE_OF_CONDUCT.md @danieleschmidt @terragon-labs/community-team
+/CONTRIBUTING.md @danieleschmidt @terragon-labs/community-team
+/SECURITY.md @danieleschmidt @terragon-labs/security-team
