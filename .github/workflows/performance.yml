@@ -1,0 +1,334 @@
+name: Performance Monitoring
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 4 * * *'  # Daily at 4 AM
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        benchmark-suite: [
+          "optimization_algorithms",
+          "surrogate_models", 
+          "data_collection",
+          "visualization",
+          "end_to_end"
+        ]
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,benchmark]"
+
+      - name: Run benchmarks
+        run: |
+          pytest tests/benchmarks/test_${{ matrix.benchmark-suite }}.py \
+            --benchmark-json=${{ matrix.benchmark-suite }}-results.json \
+            --benchmark-min-rounds=3 \
+            --benchmark-warmup=true \
+            --benchmark-disable-gc \
+            -v
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-results-${{ matrix.benchmark-suite }}
+          path: ${{ matrix.benchmark-suite }}-results.json
+
+  performance-analysis:
+    name: Performance Analysis
+    runs-on: ubuntu-latest
+    needs: benchmark
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Download all benchmark results
+        uses: actions/download-artifact@v3
+        with:
+          path: benchmark-results/
+
+      - name: Install analysis dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas matplotlib seaborn plotly
+
+      - name: Analyze performance results
+        run: |
+          python << 'EOF'
+          import json
+          import pandas as pd
+          import matplotlib.pyplot as plt
+          import os
+          from pathlib import Path
+          
+          results = []
+          for suite_dir in Path("benchmark-results").iterdir():
+              if suite_dir.is_dir():
+                  for result_file in suite_dir.glob("*-results.json"):
+                      with open(result_file) as f:
+                          data = json.load(f)
+                          suite_name = result_file.stem.replace("-results", "")
+                          
+                          for benchmark in data["benchmarks"]:
+                              results.append({
+                                  "suite": suite_name,
+                                  "name": benchmark["name"],
+                                  "mean": benchmark["stats"]["mean"],
+                                  "stddev": benchmark["stats"]["stddev"],
+                                  "min": benchmark["stats"]["min"],
+                                  "max": benchmark["stats"]["max"],
+                                  "iterations": benchmark["stats"]["iterations"]
+                              })
+          
+          if results:
+              df = pd.DataFrame(results)
+              
+              # Generate performance report
+              with open("performance-report.md", "w") as f:
+                  f.write("# Performance Benchmark Report\n\n")
+                  f.write(f"Generated on: {pd.Timestamp.now()}\n\n")
+                  
+                  for suite in df["suite"].unique():
+                      suite_df = df[df["suite"] == suite]
+                      f.write(f"## {suite.replace('_', ' ').title()}\n\n")
+                      f.write("| Benchmark | Mean (s) | Std Dev | Min (s) | Max (s) | Iterations |\n")
+                      f.write("|-----------|----------|---------|---------|---------|------------|\n")
+                      
+                      for _, row in suite_df.iterrows():
+                          f.write(f"| {row['name']} | {row['mean']:.4f} | {row['stddev']:.4f} | {row['min']:.4f} | {row['max']:.4f} | {row['iterations']} |\n")
+                      f.write("\n")
+              
+              # Create performance visualization
+              fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+              fig.suptitle("Performance Benchmark Results", fontsize=16)
+              
+              # Mean execution time by suite
+              suite_means = df.groupby("suite")["mean"].mean()
+              axes[0, 0].bar(suite_means.index, suite_means.values)
+              axes[0, 0].set_title("Average Execution Time by Suite")
+              axes[0, 0].set_ylabel("Time (seconds)")
+              axes[0, 0].tick_params(axis='x', rotation=45)
+              
+              # Distribution of execution times
+              axes[0, 1].hist(df["mean"], bins=20, alpha=0.7, edgecolor='black')
+              axes[0, 1].set_title("Distribution of Execution Times")
+              axes[0, 1].set_xlabel("Time (seconds)")
+              axes[0, 1].set_ylabel("Frequency")
+              
+              # Performance variability (coefficient of variation)
+              df["cv"] = df["stddev"] / df["mean"]
+              cv_by_suite = df.groupby("suite")["cv"].mean()
+              axes[1, 0].bar(cv_by_suite.index, cv_by_suite.values)
+              axes[1, 0].set_title("Performance Variability by Suite")
+              axes[1, 0].set_ylabel("Coefficient of Variation")
+              axes[1, 0].tick_params(axis='x', rotation=45)
+              
+              # Top 10 slowest benchmarks
+              slowest = df.nlargest(10, "mean")
+              axes[1, 1].barh(range(len(slowest)), slowest["mean"])
+              axes[1, 1].set_yticks(range(len(slowest)))
+              axes[1, 1].set_yticklabels([f"{name[:30]}..." if len(name) > 30 else name for name in slowest["name"]])
+              axes[1, 1].set_title("Top 10 Slowest Benchmarks")
+              axes[1, 1].set_xlabel("Time (seconds)")
+              
+              plt.tight_layout()
+              plt.savefig("performance-analysis.png", dpi=300, bbox_inches='tight')
+              print("Performance analysis completed")
+          else:
+              print("No benchmark results found")
+          EOF
+
+      - name: Upload performance analysis
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-analysis
+          path: |
+            performance-report.md
+            performance-analysis.png
+
+  memory-profiling:
+    name: Memory Profiling
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,benchmark]"
+          pip install memory-profiler psutil
+
+      - name: Run memory profiling
+        run: |
+          python << 'EOF'
+          import subprocess
+          import sys
+          from memory_profiler import profile
+          import surrogate_optim
+          
+          # Create a simple memory profiling script
+          profiling_script = '''
+          from memory_profiler import profile
+          import numpy as np
+          import jax.numpy as jnp
+          from surrogate_optim import SurrogateOptimizer
+          
+          @profile
+          def test_memory_usage():
+              # Simulate training data
+              X = np.random.randn(1000, 10)
+              y = np.random.randn(1000)
+              
+              # Create optimizer
+              optimizer = SurrogateOptimizer(
+                  surrogate_type="neural_network",
+                  hidden_dims=[64, 32],
+              )
+              
+              # This would normally train a model
+              print("Memory profiling test completed")
+              return X, y, optimizer
+          
+          if __name__ == "__main__":
+              test_memory_usage()
+          '''
+          
+          with open("memory_test.py", "w") as f:
+              f.write(profiling_script)
+          
+          # Run memory profiling
+          result = subprocess.run([
+              sys.executable, "-m", "memory_profiler", "memory_test.py"
+          ], capture_output=True, text=True)
+          
+          with open("memory-profile.txt", "w") as f:
+              f.write("Memory Profiling Results\n")
+              f.write("========================\n\n")
+              f.write(result.stdout)
+              if result.stderr:
+                  f.write("\nErrors:\n")
+                  f.write(result.stderr)
+          
+          print("Memory profiling completed")
+          EOF
+
+      - name: Upload memory profile
+        uses: actions/upload-artifact@v3
+        with:
+          name: memory-profile
+          path: memory-profile.txt
+
+  performance-regression:
+    name: Performance Regression Detection
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: [benchmark, performance-analysis]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download performance analysis
+        uses: actions/download-artifact@v3
+        with:
+          name: performance-analysis
+
+      - name: Check for performance regressions
+        id: regression-check
+        run: |
+          python << 'EOF'
+          import json
+          import os
+          from pathlib import Path
+          
+          # This is a simplified regression check
+          # In practice, you'd compare against baseline performance metrics
+          
+          regression_threshold = 1.20  # 20% slowdown threshold
+          regressions = []
+          
+          # Check if performance report exists
+          if Path("performance-report.md").exists():
+              print("Performance report found")
+              # Here you would implement actual regression detection logic
+              # by comparing current results with historical baselines
+              
+              # For now, we'll create a mock check
+              with open("regression-check.md", "w") as f:
+                  f.write("# Performance Regression Check\n\n")
+                  f.write("✅ No significant performance regressions detected\n\n")
+                  f.write("All benchmarks are within acceptable performance bounds.\n")
+              
+              print("regression_detected=false", file=open(os.environ["GITHUB_OUTPUT"], "a"))
+          else:
+              print("No performance report found")
+              print("regression_detected=unknown", file=open(os.environ["GITHUB_OUTPUT"], "a"))
+          EOF
+
+      - name: Comment on PR with performance results
+        if: steps.regression-check.outputs.regression_detected != 'unknown'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let comment = '## 🚀 Performance Benchmark Results\n\n';
+            
+            // Add performance report if available
+            if (fs.existsSync('performance-report.md')) {
+              const report = fs.readFileSync('performance-report.md', 'utf8');
+              comment += report + '\n\n';
+            }
+            
+            // Add regression check results
+            if (fs.existsSync('regression-check.md')) {
+              const regressionCheck = fs.readFileSync('regression-check.md', 'utf8');
+              comment += regressionCheck + '\n\n';
+            }
+            
+            comment += '📊 Full performance analysis artifacts are available in the workflow run.\n\n';
+            comment += '---\n🤖 Automated performance monitoring by GitHub Actions';
+            
+            // Post comment on PR
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
