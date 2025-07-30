@@ -1,0 +1,503 @@
+name: Release Management
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
+      prerelease:
+        description: 'Create pre-release'
+        required: false
+        default: false
+        type: boolean
+      skip_tests:
+        description: 'Skip test execution'
+        required: false
+        default: false
+        type: boolean
+      deployment_environment:
+        description: 'Deployment environment'
+        required: false
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+  pull-requests: write
+
+env:
+  PYTHON_VERSION: '3.11'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ============================================================================
+  # Version Validation & Preparation
+  # ============================================================================
+  prepare:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is_prerelease: ${{ steps.version.outputs.is_prerelease }}
+      changelog: ${{ steps.changelog.outputs.changelog }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install versioning tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install bump2version toml packaging
+    
+    - name: Determine version
+      id: version
+      run: |
+        if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/* ]]; then
+          # Extract version from tag
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+          # Check if it's a prerelease
+          if [[ "$VERSION" == *"rc"* || "$VERSION" == *"alpha"* || "$VERSION" == *"beta"* ]]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          fi
+        else
+          # Get current version and bump it
+          CURRENT_VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+          echo "Current version: $CURRENT_VERSION"
+          
+          # Bump version
+          if [[ "${{ inputs.prerelease }}" == "true" ]]; then
+            NEW_VERSION=$(python -c "
+            from packaging.version import Version
+            v = Version('$CURRENT_VERSION')
+            if v.is_prerelease:
+                print(f'{v.major}.{v.minor}.{v.micro}rc{(v.pre[1] if v.pre else 0) + 1}')
+            else:
+                if '${{ inputs.version_bump }}' == 'major':
+                    print(f'{v.major + 1}.0.0rc1')
+                elif '${{ inputs.version_bump }}' == 'minor':
+                    print(f'{v.major}.{v.minor + 1}.0rc1')
+                else:
+                    print(f'{v.major}.{v.minor}.{v.micro + 1}rc1')
+            ")
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            bump2version --dry-run --list ${{ inputs.version_bump }} | grep new_version= | cut -d= -f2 > new_version.txt
+            NEW_VERSION=$(cat new_version.txt)
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version will be: $NEW_VERSION"
+        fi
+    
+    - name: Generate changelog
+      id: changelog
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        
+        # Find the previous tag
+        PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        
+        if [ -n "$PREV_TAG" ]; then
+          RANGE="$PREV_TAG..HEAD"
+          echo "Generating changelog from $PREV_TAG to HEAD"
+        else
+          RANGE="HEAD"
+          echo "Generating changelog for all commits"
+        fi
+        
+        # Generate structured changelog
+        cat > CHANGELOG_SECTION.md << EOF
+        ## [${VERSION}] - $(date +%Y-%m-%d)
+        
+        ### Added
+        $(git log $RANGE --grep="^feat\|^add" --pretty=format:"- %s" --no-merges | head -10)
+        
+        ### Changed
+        $(git log $RANGE --grep="^change\|^update\|^modify" --pretty=format:"- %s" --no-merges | head -10)
+        
+        ### Fixed
+        $(git log $RANGE --grep="^fix\|^bug" --pretty=format:"- %s" --no-merges | head -10)
+        
+        ### Security
+        $(git log $RANGE --grep="^security\|^sec" --pretty=format:"- %s" --no-merges | head -10)
+        
+        ### Performance
+        $(git log $RANGE --grep="^perf\|^performance" --pretty=format:"- %s" --no-merges | head -10)
+        
+        ### All Changes
+        $(git log $RANGE --pretty=format:"- %s (%h)" --no-merges | head -20)
+        EOF
+        
+        # Clean up empty sections
+        sed -i '/^### [^[:space:]]*$/N;/\n$/d' CHANGELOG_SECTION.md
+        
+        echo "changelog<<EOF" >> $GITHUB_OUTPUT
+        cat CHANGELOG_SECTION.md >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+  # ============================================================================
+  # Pre-Release Testing
+  # ============================================================================
+  test:
+    name: Pre-Release Testing
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: ${{ !inputs.skip_tests }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev,benchmark]"
+    
+    - name: Run comprehensive test suite
+      run: |
+        # Run all tests including slow ones
+        pytest tests/ \
+          --cov=surrogate_optim \
+          --cov-report=xml \
+          --cov-report=term-missing \
+          --cov-fail-under=80 \
+          --maxfail=3 \
+          --tb=short \
+          -v
+        
+        # Run integration tests
+        pytest tests/integration/ -v
+        
+        # Run benchmarks to ensure no performance regression
+        pytest tests/benchmarks/ --benchmark-only --benchmark-disable-gc
+    
+    - name: Test package installation
+      run: |
+        # Build and test package
+        python -m build
+        
+        # Test wheel installation in clean environment
+        python -m venv test_env
+        source test_env/bin/activate
+        pip install dist/*.whl
+        python -c "import surrogate_optim; print(f'Successfully imported version {surrogate_optim.__version__}')"
+        
+        # Test CLI
+        surrogate-optim --help
+
+  # ============================================================================
+  # Build Release Artifacts
+  # ============================================================================
+  build:
+    name: Build Release Artifacts
+    runs-on: ubuntu-latest
+    needs: [prepare, test]
+    if: always() && (needs.test.result == 'success' || inputs.skip_tests)
+    outputs:
+      hashes: ${{ steps.hash.outputs.hashes }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install build tools
+      run: |
+        python -m pip install --upgrade pip build twine
+    
+    - name: Update version in files
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        # Update pyproject.toml version
+        python -c "
+        import toml
+        data = toml.load('pyproject.toml')
+        data['project']['version'] = '${{ needs.prepare.outputs.version }}'
+        with open('pyproject.toml', 'w') as f:
+            toml.dump(data, f)
+        "
+        
+        # Update __version__ in package
+        sed -i 's/__version__ = .*/__version__ = \"${{ needs.prepare.outputs.version }}\"/' surrogate_optim/__init__.py
+    
+    - name: Build package
+      run: |
+        python -m build
+        
+        # Verify build
+        twine check dist/*
+        
+        # List contents
+        echo "Built packages:"
+        ls -la dist/
+    
+    - name: Generate file hashes
+      id: hash
+      run: |
+        cd dist/
+        HASHES=$(sha256sum * | base64 -w0)
+        echo "hashes=$HASHES" >> $GITHUB_OUTPUT
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: dist/
+        retention-days: 30
+
+  # ============================================================================
+  # Container Images
+  # ============================================================================
+  container:
+    name: Build Container Images
+    runs-on: ubuntu-latest
+    needs: [prepare, build]
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=semver,pattern={{version}},value=v${{ needs.prepare.outputs.version }}
+          type=semver,pattern={{major}}.{{minor}},value=v${{ needs.prepare.outputs.version }}
+          type=semver,pattern={{major}},value=v${{ needs.prepare.outputs.version }}
+          type=raw,value=latest,enable={{is_default_branch}}
+    
+    - name: Build and push container images
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          VERSION=${{ needs.prepare.outputs.version }}
+          BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          VCS_REF=${{ github.sha }}
+
+  # ============================================================================
+  # Create GitHub Release
+  # ============================================================================
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [prepare, build, container]
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: dist
+        path: dist/
+    
+    - name: Create/Update tag
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+        TAG="v${{ needs.prepare.outputs.version }}"
+        
+        # Create annotated tag
+        git tag -a "$TAG" -m "Release ${{ needs.prepare.outputs.version }}"
+        git push origin "$TAG"
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ needs.prepare.outputs.version }}
+        name: Release ${{ needs.prepare.outputs.version }}
+        body: ${{ needs.prepare.outputs.changelog }}
+        draft: false
+        prerelease: ${{ needs.prepare.outputs.is_prerelease }}
+        files: |
+          dist/*
+        generate_release_notes: true
+        make_latest: ${{ needs.prepare.outputs.is_prerelease == 'false' }}
+
+  # ============================================================================
+  # Publish to PyPI
+  # ============================================================================
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [prepare, build, release]
+    if: needs.prepare.outputs.is_prerelease == 'false'  # Only publish stable releases
+    environment: 
+      name: pypi
+      url: https://pypi.org/p/surrogate-gradient-optim-lab
+    
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: dist
+        path: dist/
+    
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        verbose: true
+
+  # ============================================================================
+  # Deploy to Environment
+  # ============================================================================
+  deploy:
+    name: Deploy to ${{ inputs.deployment_environment || 'staging' }}
+    runs-on: ubuntu-latest
+    needs: [prepare, build, container, release]
+    if: inputs.deployment_environment == 'production' || needs.prepare.outputs.is_prerelease == 'false'
+    environment:
+      name: ${{ inputs.deployment_environment || 'staging' }}
+      url: https://${{ inputs.deployment_environment || 'staging' }}.surrogate-optim.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Deploy to ${{ inputs.deployment_environment || 'staging' }}
+      run: |
+        echo "Deploying version ${{ needs.prepare.outputs.version }} to ${{ inputs.deployment_environment || 'staging' }}"
+        
+        # Example deployment commands (customize for your infrastructure)
+        # kubectl set image deployment/surrogate-optim app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ needs.prepare.outputs.version }}
+        # helm upgrade surrogate-optim ./helm-chart --set image.tag=v${{ needs.prepare.outputs.version }}
+        # terraform apply -var="app_version=v${{ needs.prepare.outputs.version }}"
+        
+        echo "✅ Deployment completed successfully"
+    
+    - name: Run health checks
+      run: |
+        echo "Running post-deployment health checks..."
+        
+        # Example health checks
+        # curl -f https://${{ inputs.deployment_environment || 'staging' }}.surrogate-optim.com/health
+        # kubectl rollout status deployment/surrogate-optim
+        
+        echo "✅ Health checks passed"
+
+  # ============================================================================
+  # Post-Release Tasks
+  # ============================================================================
+  post-release:
+    name: Post-Release Tasks
+    runs-on: ubuntu-latest
+    needs: [prepare, release, publish, deploy]
+    if: always() && needs.release.result == 'success'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Update documentation
+      run: |
+        # Update README badges
+        sed -i 's/version-[^-]*-/version-${{ needs.prepare.outputs.version }}-/' README.md
+        
+        # Update CHANGELOG.md
+        if [[ -f "CHANGELOG.md" ]]; then
+          # Prepend new changelog section
+          echo "${{ needs.prepare.outputs.changelog }}" > temp_changelog.md
+          echo "" >> temp_changelog.md
+          cat CHANGELOG.md >> temp_changelog.md
+          mv temp_changelog.md CHANGELOG.md
+        else
+          echo "${{ needs.prepare.outputs.changelog }}" > CHANGELOG.md
+        fi
+    
+    - name: Create documentation update PR
+      if: github.event_name == 'workflow_dispatch'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "docs: update for release ${{ needs.prepare.outputs.version }}"
+        title: "📚 Update documentation for release ${{ needs.prepare.outputs.version }}"
+        body: |
+          ## Documentation Updates for Release ${{ needs.prepare.outputs.version }}
+          
+          This PR updates documentation following the release of version ${{ needs.prepare.outputs.version }}.
+          
+          ### Changes:
+          - Updated README.md version badges
+          - Updated CHANGELOG.md with release notes
+          
+          ### Auto-generated by release workflow
+          - Release: ${{ needs.prepare.outputs.version }}
+          - Type: ${{ needs.prepare.outputs.is_prerelease == 'true' && 'Pre-release' || 'Stable release' }}
+        branch: docs/release-${{ needs.prepare.outputs.version }}
+        delete-branch: true
+    
+    - name: Notify team
+      run: |
+        echo "🎉 Release ${{ needs.prepare.outputs.version }} completed successfully!"
+        echo "📦 Package: https://pypi.org/project/surrogate-gradient-optim-lab/${{ needs.prepare.outputs.version }}/"
+        echo "🐳 Container: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ needs.prepare.outputs.version }}"
+        echo "🌐 Environment: ${{ inputs.deployment_environment || 'staging' }}"

@@ -7,28 +7,56 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "09:00"
-    open-pull-requests-limit: 5
-    commit-message:
-      prefix: "chore"
-      prefix-development: "chore"
-      include: "scope"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "terragon-labs/core-team"
+    assignees:
+      - "terragon-labs/maintainers"
     labels:
       - "dependencies"
       - "python"
-    assignees:
-      - "danieleschmidt"
-    reviewers:
-      - "danieleschmidt"
-    allow:
-      - dependency-type: "direct"
-      - dependency-type: "indirect"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    # Group related updates
+    groups:
+      jax-ecosystem:
+        patterns:
+          - "jax*"
+          - "optax*"
+          - "flax*"
+          - "dm-haiku*"
+      scientific-computing:
+        patterns:
+          - "numpy*"
+          - "scipy*"
+          - "scikit-learn*"
+          - "pandas*"
+      visualization:
+        patterns:
+          - "matplotlib*"
+          - "plotly*"
+          - "seaborn*"
+      development:
+        patterns:
+          - "pytest*"
+          - "black*"
+          - "ruff*"
+          - "mypy*"
+          - "pre-commit*"
+      security:
+        patterns:
+          - "bandit*"
+          - "safety*"
+    # Version constraints
     ignore:
-      # Ignore major version updates for core dependencies
+      # Ignore major version updates for stability
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+      # Ignore specific packages that require manual updates
       - dependency-name: "jax"
         update-types: ["version-update:semver-major"]
       - dependency-name: "jaxlib"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "numpy"
         update-types: ["version-update:semver-major"]
 
   # GitHub Actions
@@ -36,35 +64,34 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
-      time: "09:00"
-    open-pull-requests-limit: 3
-    commit-message:
-      prefix: "ci"
-      include: "scope"
+      day: "tuesday"
+      time: "10:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "terragon-labs/devops-team"
     labels:
       - "dependencies"
       - "github-actions"
-    assignees:
-      - "danieleschmidt"
-    reviewers:
-      - "danieleschmidt"
+      - "ci-cd"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
 
   # Docker dependencies
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
-      time: "09:00"
-    open-pull-requests-limit: 2
-    commit-message:
-      prefix: "docker"
-      include: "scope"
+      day: "wednesday"
+      time: "11:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "terragon-labs/devops-team"
     labels:
       - "dependencies"
       - "docker"
-    assignees:
-      - "danieleschmidt"
-    reviewers:
-      - "danieleschmidt"
+    commit-message:
+      prefix: "docker"
+      include: "scope"
