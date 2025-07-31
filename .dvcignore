@@ -1,0 +1,96 @@
+# DVC ignore patterns
+# https://dvc.org/doc/user-guide/project-structure/dvcignore
+
+# Add patterns of files/directories that should be ignored by DVC
+# Similar to .gitignore but for DVC
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing and coverage
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Documentation builds
+docs/_build/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+
+# Log files
+*.log
+
+# Cache directories
+.cache/
+cache/
+.ruff_cache/
+.mypy_cache/
+
+# Model artifacts (usually we want these tracked by DVC)
+# Uncomment if you want to ignore specific model formats
+# *.pkl
+# *.joblib
+# *.h5
+# *.pt
+# *.pth

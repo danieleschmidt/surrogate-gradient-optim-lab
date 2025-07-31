@@ -1,0 +1,69 @@
+# Data Version Control (DVC) Pipeline Configuration
+# https://dvc.org/doc/user-guide/project-structure/dvcyaml-files
+
+stages:
+  prepare_data:
+    cmd: python scripts/prepare_data.py
+    deps:
+      - scripts/prepare_data.py
+      - data/raw/
+    outs:
+      - data/processed/
+    params:
+      - data_preparation.sample_size
+      - data_preparation.random_seed
+    desc: "Prepare and preprocess raw data for training"
+
+  train_surrogate:
+    cmd: python scripts/train_surrogate.py
+    deps:
+      - scripts/train_surrogate.py
+      - data/processed/
+      - surrogate_optim/
+    outs:
+      - models/surrogate/
+    params:
+      - training.model_type
+      - training.hidden_dims
+      - training.learning_rate
+      - training.epochs
+    metrics:
+      - metrics/training_metrics.json
+    plots:
+      - plots/training_curves.json
+    desc: "Train surrogate models on processed data"
+
+  evaluate_model:
+    cmd: python scripts/evaluate_model.py
+    deps:
+      - scripts/evaluate_model.py
+      - models/surrogate/
+      - data/processed/
+    metrics:
+      - metrics/evaluation_metrics.json
+    plots:
+      - plots/evaluation_plots.json
+    desc: "Evaluate trained surrogate models"
+
+  benchmark:
+    cmd: python scripts/run_benchmarks.py
+    deps:
+      - scripts/run_benchmarks.py
+      - models/surrogate/
+    outs:
+      - results/benchmarks/
+    metrics:
+      - metrics/benchmark_results.json
+    desc: "Run performance benchmarks on trained models"
+
+# Artifacts for ML model management
+artifacts:
+  model:
+    path: models/surrogate/best_model.pkl
+    type: model
+    desc: "Best performing surrogate model"
+  
+  preprocessor:
+    path: models/preprocessing/scaler.pkl
+    type: model
+    desc: "Data preprocessing pipeline"

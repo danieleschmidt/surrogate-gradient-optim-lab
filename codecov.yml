@@ -1,0 +1,51 @@
+# Codecov configuration for advanced coverage reporting
+# https://docs.codecov.com/docs/codecov-yaml
+
+coverage:
+  status:
+    project:
+      default:
+        target: 85%           # Target coverage percentage
+        threshold: 2%         # Allow coverage to drop by 2%
+        base: auto            # Compare against base branch
+        flags:
+          - unit
+          - integration
+    patch:
+      default:
+        target: 80%           # New code coverage target
+        threshold: 5%         # Allow new code to have 5% lower coverage
+        base: auto
+
+  ignore:
+    - "surrogate_optim/cli.py"           # CLI interface
+    - "surrogate_optim/examples/**"     # Example code
+    - "surrogate_optim/benchmarks/**"   # Benchmark scripts
+    - "tests/**"                        # Test files themselves
+    - "docs/**"                         # Documentation
+    - "scripts/**"                      # Build scripts
+    - "setup.py"                        # Setup script
+
+comment:
+  layout: "reach,diff,flags,tree,reach"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+
+github_checks:
+  annotations: true
+
+flags:
+  unit:
+    paths:
+      - tests/unit/
+    carryforward: true
+  integration:
+    paths:
+      - tests/integration/
+    carryforward: true
+  benchmarks:
+    paths:
+      - tests/benchmarks/
+    carryforward: true

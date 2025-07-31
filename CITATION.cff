@@ -1,0 +1,38 @@
+# CITATION.cff - Citation metadata for academic use
+# https://citation-file-format.github.io/
+
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "Surrogate Gradient Optimization Lab"
+abstract: "Toolkit for offline black-box optimization using learned gradient surrogates. When you can't compute real gradients (simulators, hardware, human feedback), learn approximations that enable gradient-based optimization."
+authors:
+  - family-names: "Schmidt"
+    given-names: "Daniel"
+    email: "daniel@terragon-labs.com"
+    affiliation: "Terragon Labs"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+repository-code: "https://github.com/terragon-labs/surrogate-gradient-optim-lab"
+url: "https://docs.terragon-labs.com/surrogate-optim"
+license: MIT
+version: 0.1.0
+date-released: 2024-01-01
+keywords:
+  - optimization
+  - machine-learning
+  - surrogate-models
+  - gradients
+  - jax
+  - black-box-optimization
+  - gradient-free-optimization
+preferred-citation:
+  type: article
+  title: "Learning Surrogates for Offline Black-Box Optimization"
+  authors:
+    - family-names: "Schmidt"
+      given-names: "Daniel"
+      email: "daniel@terragon-labs.com"
+      affiliation: "Terragon Labs"
+  journal: "arXiv preprint"
+  year: 2024
+  url: "https://arxiv.org/abs/2503.01883"

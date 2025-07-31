@@ -1,0 +1,31 @@
+{
+  "projectName": "surrogate-gradient-optim-lab",
+  "projectOwner": "terragon-labs",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "danieleschmidt",
+      "name": "Daniel Schmidt",
+      "avatar_url": "https://avatars.githubusercontent.com/u/username?v=4",
+      "profile": "https://github.com/danieleschmidt",
+      "contributions": [
+        "code",
+        "doc",
+        "test",
+        "ideas",
+        "infra",
+        "maintenance"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "linkToUsage": true
+}
