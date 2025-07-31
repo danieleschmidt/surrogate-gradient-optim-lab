@@ -1,0 +1,80 @@
+# Semgrep ignore patterns for security scanning
+# https://semgrep.dev/docs/ignoring-files-folders-code/
+
+# Test files and directories
+tests/
+*_test.py
+test_*.py
+conftest.py
+
+# Build and distribution directories  
+build/
+dist/
+*.egg-info/
+__pycache__/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Cache directories
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Documentation
+docs/
+*.md
+*.rst
+
+# Configuration files (generally safe)
+*.cfg
+*.ini
+*.toml
+pyproject.toml
+setup.py
+noxfile.py
+
+# Examples and benchmarks (may contain intentional patterns)
+examples/
+benchmarks/
+playground/
+sandbox/
+scratch/
+
+# Jupyter notebooks (may contain test data)
+*.ipynb
+.ipynb_checkpoints/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# CI/CD files
+.github/
+.gitlab-ci.yml
+Jenkinsfile
+
+# Docker files (may contain intentional patterns for demos)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Logging and data directories
+logs/
+data/
+outputs/
+results/
+cache/
+models/
+checkpoints/
