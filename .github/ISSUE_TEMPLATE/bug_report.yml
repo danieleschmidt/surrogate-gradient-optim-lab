@@ -1,0 +1,190 @@
+name: Bug Report
+description: File a bug report to help us improve
+title: "🐛 [Bug]: "
+labels: ["bug", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! 🐛
+        
+        Please search existing issues before creating a new one to avoid duplicates.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm you have completed these steps
+      options:
+        - label: I have searched existing issues and this is not a duplicate
+          required: true
+        - label: I have read the documentation
+          required: true
+        - label: I am using the latest version of the software
+          required: false
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Bug Summary
+      description: A clear and concise description of what the bug is
+      placeholder: Describe the bug in 1-2 sentences
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe what should have happened
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Describe what actually happened
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Please provide detailed steps to reproduce the issue
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Run command '...'
+        4. See error
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+
+  - type: textarea
+    id: minimal-example
+    attributes:
+      label: Minimal Reproducible Example
+      description: Please provide a minimal code example that reproduces the issue
+      render: python
+      placeholder: |
+        ```python
+        # Minimal example that reproduces the bug
+        from surrogate_optim import ...
+        
+        # Your code here
+        ```
+
+  - type: textarea
+    id: error-output
+    attributes:
+      label: Error Output
+      description: Please paste any error messages or stack traces
+      render: text
+      placeholder: Paste the full error output here
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this bug?
+      options:
+        - Low - Minor inconvenience
+        - Medium - Affects functionality but has workaround
+        - High - Breaks important functionality
+        - Critical - Complete failure or data loss
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Package Version
+      description: What version of surrogate-gradient-optim-lab are you using?
+      placeholder: "e.g., 0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python Version
+      description: What version of Python are you using?
+      placeholder: "e.g., 3.11.5"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: What operating system are you using?
+      options:
+        - Ubuntu Linux
+        - Other Linux
+        - macOS
+        - Windows
+        - Docker Container
+        - Other (please specify in additional context)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Please provide additional environment information
+      placeholder: |
+        - JAX version: 
+        - NumPy version: 
+        - GPU: Yes/No (if yes, specify type)
+        - Container: Yes/No
+        - Cloud provider: 
+        - Other relevant details:
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: |
+        - Screenshots (if applicable)
+        - Related issues
+        - Workarounds you've tried
+        - Any other relevant information
+
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: Impact Areas
+      description: Which areas does this bug affect? (Check all that apply)
+      options:
+        - label: Core optimization algorithms
+        - label: Surrogate model training
+        - label: Data preprocessing
+        - label: Visualization/plotting
+        - label: CLI interface
+        - label: Documentation
+        - label: Performance
+        - label: Memory usage
+        - label: Installation/setup
+        - label: Tests
+        - label: Examples/tutorials
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you willing to help fix this bug?
+      options:
+        - label: I would like to work on a fix for this bug
+        - label: I can provide additional testing
+        - label: I can help with documentation updates

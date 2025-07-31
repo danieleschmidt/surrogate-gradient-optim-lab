@@ -1,0 +1,204 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "✨ [Feature]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! ✨
+        
+        Please search existing issues and discussions before creating a new feature request.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm you have completed these steps
+      options:
+        - label: I have searched existing issues and discussions
+          required: true
+        - label: This feature aligns with the project's goals
+          required: true
+        - label: I have considered potential alternatives
+          required: false
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: A clear and concise description of the feature you'd like to see
+      placeholder: Describe the feature in 1-2 sentences
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? What's the motivation?
+      placeholder: |
+        Describe the problem or use case that motivates this feature request.
+        What limitations are you experiencing?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see implemented
+      placeholder: |
+        How would you like this feature to work?
+        What should the API/interface look like?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What alternative solutions or features have you considered?
+      placeholder: |
+        - Alternative approach A: ...
+        - Alternative approach B: ...
+        - Why the proposed solution is preferred: ...
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: Which category best describes this feature?
+      options:
+        - Core Algorithm - New optimization algorithms or improvements
+        - Surrogate Models - New model types or architectures
+        - Data Processing - Data collection, preprocessing, or augmentation
+        - Visualization - Plotting, dashboards, or analysis tools
+        - Performance - Speed, memory, or scalability improvements
+        - API/Interface - CLI, Python API, or configuration improvements
+        - Documentation - Guides, tutorials, or examples
+        - Testing - Test framework or coverage improvements
+        - Deployment - Containerization, packaging, or distribution
+        - Integration - Third-party tool integrations
+        - Other (please specify in additional context)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have, not urgent
+        - Medium - Would improve workflow significantly
+        - High - Important for current/planned projects
+        - Critical - Blocking current work
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Describe specific use cases where this feature would be valuable
+      placeholder: |
+        1. Use case 1: When working with [scenario], users would benefit from...
+        2. Use case 2: In [industry/domain], this would enable...
+        3. Use case 3: For [type of optimization problem], this would...
+
+  - type: textarea
+    id: example-usage
+    attributes:
+      label: Example Usage
+      description: Show how you envision using this feature with code examples
+      render: python
+      placeholder: |
+        ```python
+        # Example of how the new feature would be used
+        from surrogate_optim import NewFeature
+        
+        # Your example code here
+        feature = NewFeature(parameter1=value1)
+        result = feature.method()
+        ```
+
+  - type: checkboxes
+    id: implementation-areas
+    attributes:
+      label: Implementation Areas
+      description: Which areas would likely need changes? (Check all that apply)
+      options:
+        - label: Core algorithms (`surrogate_optim/algorithms/`)
+        - label: Model implementations (`surrogate_optim/models/`)
+        - label: Data handling (`surrogate_optim/data/`)
+        - label: Visualization (`surrogate_optim/visualization/`)
+        - label: CLI interface (`surrogate_optim/cli/`)
+        - label: Configuration system
+        - label: Testing framework
+        - label: Documentation
+        - label: Examples and tutorials
+        - label: Build/packaging system
+        - label: CI/CD pipeline
+
+  - type: textarea
+    id: technical-considerations
+    attributes:
+      label: Technical Considerations
+      description: Any technical details, constraints, or implementation thoughts?
+      placeholder: |
+        - Performance requirements:
+        - Dependencies that might be needed:
+        - Backward compatibility concerns:
+        - Integration points:
+        - Testing considerations:
+
+  - type: dropdown
+    id: breaking-change
+    attributes:
+      label: Breaking Change
+      description: Would this feature require breaking changes to the existing API?
+      options:
+        - "No - Fully backward compatible"
+        - "Minor - Small API additions only"
+        - "Moderate - Some API changes but migration path exists"
+        - "Major - Significant API changes required"
+        - "Unknown - Needs analysis"
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, mockups, references, or examples
+      placeholder: |
+        - Screenshots or mockups:
+        - Links to similar features in other tools:
+        - Research papers or references:
+        - Related issues or discussions:
+        - Any other relevant information:
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution Willingness
+      description: Are you willing to help implement this feature?
+      options:
+        - label: I would like to implement this feature myself
+        - label: I can help with testing and feedback
+        - label: I can help with documentation
+        - label: I can provide domain expertise/guidance
+        - label: I can help with code review
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline and Context
+      description: Any timeline considerations or project context?
+      placeholder: |
+        - When would you need this feature?
+        - Is this for a specific project or deadline?
+        - Any other timing considerations:
