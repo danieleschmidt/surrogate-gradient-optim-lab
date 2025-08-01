@@ -1,0 +1,56 @@
+scoring:
+  weights:
+    # Advanced repository weights - focus on optimization and modernization
+    advanced:
+      wsjf: 0.5          # Weighted Shortest Job First
+      ice: 0.1           # Impact * Confidence * Ease  
+      technicalDebt: 0.3 # Technical debt reduction priority
+      security: 0.1      # Security improvements
+  
+  thresholds:
+    minScore: 15         # Higher threshold for advanced repos
+    maxRisk: 0.7         # Accept moderate risk for high value
+    securityBoost: 2.0   # 2x multiplier for security issues
+    complianceBoost: 1.8 # 1.8x multiplier for compliance
+
+discovery:
+  sources:
+    - gitHistory         # Mine commit messages and history
+    - staticAnalysis     # Code quality and complexity metrics
+    - issueTrackers      # GitHub issues and discussions
+    - vulnerabilityDatabases # Security vulnerability feeds
+    - performanceMonitoring  # Performance regression detection
+    - userFeedback       # Bug reports and feature requests
+  
+  tools:
+    staticAnalysis:
+      - ruff             # Primary Python linter
+      - mypy             # Type checking
+      - bandit           # Security linting
+      - pytest-cov      # Coverage analysis
+    security:
+      - safety           # Dependency vulnerability scanning
+      - bandit           # Security linting
+      - trivy            # Container security
+    performance:
+      - pytest-benchmark # Performance regression testing
+      - memory-profiler  # Memory usage analysis
+
+execution:
+  maxConcurrentTasks: 1
+  testRequirements:
+    minCoverage: 80
+    performanceRegression: 5  # Max 5% performance regression
+  rollbackTriggers:
+    - testFailure
+    - buildFailure  
+    - securityViolation
+    - coverageRegression
+
+maturity:
+  level: "advanced"      # Current repository maturity
+  focus:
+    - optimization       # Performance and efficiency improvements
+    - modernization     # Technology stack updates
+    - automation        # Further SDLC automation
+    - innovation        # Emerging tech integration
