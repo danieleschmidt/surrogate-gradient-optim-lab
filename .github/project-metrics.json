@@ -1,0 +1,81 @@
+{
+  "repository": {
+    "name": "surrogate-gradient-optim-lab",
+    "organization": "danieleschmidt",
+    "description": "Toolkit for offline black-box optimization using learned gradient surrogates",
+    "topics": ["optimization", "machine-learning", "surrogate-models", "jax", "python", "black-box-optimization"],
+    "homepage": "https://github.com/danieleschmidt/surrogate-gradient-optim-lab"
+  },
+  "metrics": {
+    "code_quality": {
+      "coverage_threshold": 90,
+      "complexity_threshold": 10,
+      "technical_debt_ratio_threshold": 0.05,
+      "duplication_threshold": 3.0,
+      "maintainability_rating": "A"
+    },
+    "performance": {
+      "build_time_threshold_minutes": 10,
+      "test_execution_time_threshold_minutes": 5,
+      "benchmark_regression_threshold_percent": 5
+    },
+    "security": {
+      "vulnerability_threshold": 0,
+      "dependency_scan_frequency": "weekly",
+      "security_hotspots_threshold": 0
+    },
+    "collaboration": {
+      "pr_review_turnaround_hours": 48,
+      "issue_response_time_hours": 24,
+      "contributor_activity_threshold": 5
+    },
+    "release": {
+      "deployment_frequency": "weekly",
+      "lead_time_days": 3,
+      "mean_time_to_recovery_hours": 4,
+      "change_failure_rate_percent": 5
+    }
+  },
+  "tracking": {
+    "automated_checks": [
+      "code_coverage",
+      "test_execution",
+      "security_scan",
+      "dependency_audit",
+      "performance_benchmarks",
+      "documentation_coverage"
+    ],
+    "manual_reviews": [
+      "architecture_decisions",
+      "api_design",
+      "user_experience",
+      "performance_analysis"
+    ],
+    "reporting": {
+      "dashboard_url": "https://terragon-labs.github.io/metrics-dashboard",
+      "update_frequency": "daily",
+      "stakeholder_reports": "monthly"
+    }
+  },
+  "goals": {
+    "2024": {
+      "github_stars": 500,
+      "pypi_downloads_monthly": 2000,
+      "contributors": 15,
+      "test_coverage": 95,
+      "documentation_completeness": 100
+    }
+  },
+  "benchmarks": {
+    "optimization_accuracy": {
+      "target_gradient_error_percent": 5,
+      "convergence_improvement_factor": 2.0,
+      "supported_dimensions": [2, 10, 50, 100]
+    },
+    "performance_targets": {
+      "optimization_time_2d_seconds": 1,
+      "training_time_1000_samples_seconds": 30,
+      "memory_usage_mb_per_dimension": 50
+    }
+  }
+}

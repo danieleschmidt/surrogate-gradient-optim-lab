@@ -1,0 +1,1 @@
+# Automation package for repository management and quality assurance
