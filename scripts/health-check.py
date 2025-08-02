@@ -154,7 +154,7 @@ class HealthChecker:
             # Check for security vulnerabilities
             try:
                 result = subprocess.run(
-                    ["python", "-m", "pip_audit", "--format=json"],
+                    ["python3", "-m", "pip_audit", "--format=json"],
                     capture_output=True, text=True
                 )
                 
@@ -205,7 +205,7 @@ class HealthChecker:
         try:
             # Run tests
             result = subprocess.run(
-                ["python", "-m", "pytest", "--tb=no", "-q"],
+                ["python3", "-m", "pytest", "--tb=no", "-q"],
                 capture_output=True, text=True, cwd=self.repo_path
             )
             
@@ -218,7 +218,7 @@ class HealthChecker:
             
             # Check test coverage
             coverage_result = subprocess.run(
-                ["python", "-m", "pytest", "--cov=surrogate_optim", "--cov-report=term-missing", "--tb=no", "-q"],
+                ["python3", "-m", "pytest", "--cov=surrogate_optim", "--cov-report=term-missing", "--tb=no", "-q"],
                 capture_output=True, text=True, cwd=self.repo_path
             )
             
@@ -316,7 +316,7 @@ class HealthChecker:
             # Try to build the package
             try:
                 result = subprocess.run(
-                    ["python", "-m", "build", "--wheel"],
+                    ["python3", "-m", "build", "--wheel"],
                     capture_output=True, text=True, cwd=self.repo_path
                 )
                 
@@ -401,7 +401,7 @@ class HealthChecker:
             # Try to run benchmarks
             try:
                 result = subprocess.run(
-                    ["python", "-m", "pytest", "tests/benchmarks/", "--tb=no", "-q"],
+                    ["python3", "-m", "pytest", "tests/benchmarks/", "--tb=no", "-q"],
                     capture_output=True, text=True, cwd=self.repo_path,
                     timeout=60  # 1 minute timeout
                 )

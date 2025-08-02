@@ -41,7 +41,7 @@ class CodeCoverageGate(QualityGate):
         """Check code coverage against threshold."""
         try:
             result = subprocess.run(
-                ["python", "-m", "pytest", "--cov=surrogate_optim", "--cov-report=json", "--tb=no", "-q"],
+                ["python3", "-m", "pytest", "--cov=surrogate_optim", "--cov-report=json", "--tb=no", "-q"],
                 capture_output=True, text=True, cwd=self.repo_path
             )
             
@@ -79,7 +79,7 @@ class TestPassingGate(QualityGate):
         """Check if all tests pass."""
         try:
             result = subprocess.run(
-                ["python", "-m", "pytest", "--tb=no", "-v"],
+                ["python3", "-m", "pytest", "--tb=no", "-v"],
                 capture_output=True, text=True, cwd=self.repo_path
             )
             
@@ -121,7 +121,7 @@ class LintingGate(QualityGate):
         try:
             # Run ruff
             result = subprocess.run(
-                ["python", "-m", "ruff", "check", "surrogate_optim", "--format=json"],
+                ["python3", "-m", "ruff", "check", "surrogate_optim", "--format=json"],
                 capture_output=True, text=True, cwd=self.repo_path
             )
             
@@ -156,7 +156,7 @@ class SecurityGate(QualityGate):
         try:
             # Run bandit for security issues
             result = subprocess.run(
-                ["python", "-m", "bandit", "-r", "surrogate_optim", "-f", "json"],
+                ["python3", "-m", "bandit", "-r", "surrogate_optim", "-f", "json"],
                 capture_output=True, text=True, cwd=self.repo_path
             )
             
@@ -172,7 +172,7 @@ class SecurityGate(QualityGate):
             vuln_count = 0
             try:
                 pip_audit_result = subprocess.run(
-                    ["python", "-m", "pip_audit", "--format=json"],
+                    ["python3", "-m", "pip_audit", "--format=json"],
                     capture_output=True, text=True
                 )
                 
@@ -209,7 +209,7 @@ class ComplexityGate(QualityGate):
         """Check code complexity."""
         try:
             result = subprocess.run(
-                ["python", "-m", "radon", "cc", "surrogate_optim", "--json"],
+                ["python3", "-m", "radon", "cc", "surrogate_optim", "--json"],
                 capture_output=True, text=True, cwd=self.repo_path
             )
             
@@ -266,7 +266,7 @@ class PerformanceGate(QualityGate):
             
             # Run benchmarks
             result = subprocess.run(
-                ["python", "-m", "pytest", "tests/benchmarks/", "--tb=no", "-v"],
+                ["python3", "-m", "pytest", "tests/benchmarks/", "--tb=no", "-v"],
                 capture_output=True, text=True, cwd=self.repo_path,
                 timeout=120  # 2 minute timeout
             )
