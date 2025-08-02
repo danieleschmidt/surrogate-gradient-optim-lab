@@ -1,0 +1,386 @@
+# Observability Configuration for Surrogate Gradient Optimization Lab
+# Comprehensive monitoring, logging, and tracing configuration
+
+# =============================================================================
+# Global Settings
+# =============================================================================
+global:
+  service_name: "surrogate-gradient-optim-lab"
+  service_version: "0.1.0"
+  environment: "${ENVIRONMENT:-development}"
+  
+# =============================================================================
+# Logging Configuration
+# =============================================================================
+logging:
+  level: "${LOG_LEVEL:-INFO}"
+  format: "${LOG_FORMAT:-json}"
+  
+  # Log outputs
+  handlers:
+    console:
+      enabled: true
+      level: INFO
+      format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    
+    file:
+      enabled: true
+      level: DEBUG
+      file_path: "logs/surrogate_optim.log"
+      max_bytes: 10485760  # 10MB
+      backup_count: 5
+      format: "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s"
+    
+    json_file:
+      enabled: true
+      level: INFO
+      file_path: "logs/surrogate_optim.json"
+      max_bytes: 10485760  # 10MB
+      backup_count: 5
+  
+  # Logger configurations
+  loggers:
+    surrogate_optim:
+      level: DEBUG
+      propagate: false
+      
+    jax:
+      level: WARNING
+      
+    matplotlib:
+      level: WARNING
+      
+    urllib3:
+      level: WARNING
+
+# =============================================================================
+# Metrics Configuration
+# =============================================================================
+metrics:
+  enabled: true
+  collection_interval: 60  # seconds
+  retention_period: 86400  # 24 hours in seconds
+  
+  # Prometheus integration
+  prometheus:
+    enabled: true
+    port: 9090
+    path: "/metrics"
+    
+    # Custom metrics
+    custom_metrics:
+      - name: "surrogate_model_training_duration_seconds"
+        type: "histogram"
+        description: "Time spent training surrogate models"
+        labels: ["model_type", "dataset_size"]
+        buckets: [0.1, 0.5, 1.0, 5.0, 10.0, 30.0, 60.0, 300.0]
+      
+      - name: "optimization_iterations_total"
+        type: "counter"
+        description: "Total number of optimization iterations"
+        labels: ["optimizer_type", "problem_type"]
+      
+      - name: "surrogate_prediction_duration_seconds"
+        type: "histogram"
+        description: "Time spent making surrogate predictions"
+        labels: ["model_type"]
+        buckets: [0.001, 0.01, 0.1, 0.5, 1.0]
+      
+      - name: "gradient_computation_duration_seconds"
+        type: "histogram"
+        description: "Time spent computing gradients"
+        labels: ["computation_type"]
+        buckets: [0.001, 0.01, 0.1, 0.5, 1.0, 5.0]
+      
+      - name: "memory_usage_bytes"
+        type: "gauge"
+        description: "Current memory usage"
+        labels: ["component"]
+      
+      - name: "active_optimizations"
+        type: "gauge"
+        description: "Number of currently active optimizations"
+        labels: ["status"]
+      
+      - name: "data_points_processed_total"
+        type: "counter"
+        description: "Total number of data points processed"
+        labels: ["operation_type"]
+      
+      - name: "model_accuracy_score"
+        type: "gauge"
+        description: "Current model accuracy metrics"
+        labels: ["model_type", "metric_type"]
+      
+      - name: "jax_compilation_duration_seconds"
+        type: "histogram"
+        description: "Time spent on JAX compilation"
+        labels: ["function_type"]
+        buckets: [0.01, 0.1, 0.5, 1.0, 5.0, 10.0]
+
+# =============================================================================
+# Health Checks Configuration
+# =============================================================================
+health_checks:
+  enabled: true
+  interval: 30  # seconds
+  timeout: 10   # seconds
+  
+  # Health check endpoints
+  endpoints:
+    liveness:
+      path: "/health/live"
+      description: "Basic liveness probe"
+      
+    readiness:
+      path: "/health/ready"
+      description: "Readiness probe with dependency checks"
+      
+    detailed:
+      path: "/health/detailed"
+      description: "Detailed health information"
+  
+  # Individual health checks
+  checks:
+    jax_availability:
+      enabled: true
+      timeout: 5
+      critical: true
+      
+    jax_computation:
+      enabled: true
+      timeout: 10
+      critical: true
+      
+    memory_usage:
+      enabled: true
+      timeout: 2
+      critical: false
+      warning_threshold: 80  # percent
+      critical_threshold: 95  # percent
+      
+    dependency_imports:
+      enabled: true
+      timeout: 5
+      critical: true
+      
+    disk_space:
+      enabled: true
+      timeout: 2
+      critical: false
+      warning_threshold: 80  # percent
+      critical_threshold: 95  # percent
+      paths:
+        - "/"
+        - "/tmp"
+        - "./logs"
+        - "./data"
+
+# =============================================================================
+# Tracing Configuration
+# =============================================================================
+tracing:
+  enabled: false  # Enable for detailed performance analysis
+  
+  # OpenTelemetry configuration
+  opentelemetry:
+    service_name: "surrogate-gradient-optim-lab"
+    
+    # Jaeger exporter
+    jaeger:
+      enabled: false
+      endpoint: "http://localhost:14268/api/traces"
+      
+    # OTLP exporter
+    otlp:
+      enabled: false
+      endpoint: "http://localhost:4317"
+      
+    # Console exporter (for development)
+    console:
+      enabled: true
+  
+  # Sampling configuration
+  sampling:
+    rate: 0.1  # Sample 10% of traces
+    
+  # Instrumentation
+  instrumentation:
+    jax_operations: true
+    surrogate_training: true
+    optimization_steps: true
+    data_loading: true
+
+# =============================================================================
+# Performance Monitoring
+# =============================================================================
+performance:
+  enabled: true
+  
+  # Memory profiling
+  memory_profiling:
+    enabled: false  # Enable for detailed memory analysis
+    interval: 60    # seconds
+    max_snapshots: 100
+    
+  # CPU profiling
+  cpu_profiling:
+    enabled: false  # Enable for detailed CPU analysis
+    interval: 30    # seconds
+    duration: 10    # seconds per sample
+    
+  # Performance benchmarks
+  benchmarks:
+    enabled: true
+    interval: 300   # 5 minutes
+    
+    tests:
+      - name: "basic_gradient_computation"
+        description: "Test basic JAX gradient computation performance"
+        dimensions: [10, 100, 1000]
+        
+      - name: "surrogate_prediction"
+        description: "Test surrogate model prediction performance"
+        model_types: ["neural_network", "gaussian_process"]
+        input_sizes: [1, 10, 100, 1000]
+        
+      - name: "optimization_step"
+        description: "Test optimization step performance"
+        optimizers: ["L-BFGS-B", "Adam", "SGD"]
+
+# =============================================================================
+# Alerting Configuration
+# =============================================================================
+alerting:
+  enabled: true
+  
+  # Alert channels
+  channels:
+    console:
+      enabled: true
+      level: "WARNING"
+      
+    file:
+      enabled: true
+      file_path: "logs/alerts.log"
+      level: "ERROR"
+      
+    webhook:
+      enabled: false
+      url: "https://hooks.slack.com/your-webhook-url"
+      level: "CRITICAL"
+  
+  # Alert rules
+  rules:
+    - name: "high_memory_usage"
+      condition: "memory_usage_percent > 90"
+      severity: "WARNING"
+      description: "Memory usage is critically high"
+      
+    - name: "failed_health_check"
+      condition: "health_check_failed"
+      severity: "CRITICAL"
+      description: "Critical health check failed"
+      
+    - name: "slow_optimization"
+      condition: "optimization_duration > 300"
+      severity: "WARNING"
+      description: "Optimization taking unusually long"
+      
+    - name: "model_accuracy_degradation"
+      condition: "model_accuracy < 0.8"
+      severity: "WARNING"
+      description: "Model accuracy has degraded significantly"
+
+# =============================================================================
+# Dashboard Configuration
+# =============================================================================
+dashboard:
+  enabled: true
+  
+  # Grafana integration
+  grafana:
+    enabled: false
+    url: "http://localhost:3000"
+    dashboard_id: "surrogate-optim-dashboard"
+    
+  # Built-in dashboard
+  builtin:
+    enabled: true
+    port: 8080
+    refresh_interval: 30  # seconds
+    
+    panels:
+      - name: "System Health"
+        type: "status"
+        metrics: ["health_checks", "memory_usage", "cpu_usage"]
+        
+      - name: "Optimization Performance"
+        type: "timeseries"
+        metrics: ["optimization_iterations", "optimization_duration"]
+        
+      - name: "Model Metrics"
+        type: "gauge"
+        metrics: ["model_accuracy", "training_duration"]
+        
+      - name: "Resource Usage"
+        type: "timeseries"
+        metrics: ["memory_usage", "cpu_usage", "disk_usage"]
+
+# =============================================================================
+# Data Export Configuration
+# =============================================================================
+export:
+  enabled: true
+  
+  # Export formats
+  formats:
+    prometheus:
+      enabled: true
+      endpoint: "/metrics"
+      
+    json:
+      enabled: true
+      endpoint: "/metrics/json"
+      file_path: "logs/metrics.json"
+      
+    csv:
+      enabled: false
+      file_path: "logs/metrics.csv"
+  
+  # Export schedule
+  schedule:
+    interval: 300  # 5 minutes
+    batch_size: 1000
+    compression: true
+
+# =============================================================================
+# Integration Configuration
+# =============================================================================
+integrations:
+  # Weights & Biases
+  wandb:
+    enabled: false
+    project: "surrogate-gradient-optim"
+    entity: "your-wandb-entity"
+    
+  # MLflow
+  mlflow:
+    enabled: false
+    tracking_uri: "http://localhost:5000"
+    experiment_name: "surrogate_optimization"
+    
+  # TensorBoard
+  tensorboard:
+    enabled: false
+    log_dir: "logs/tensorboard"
+    
+  # External monitoring services
+  datadog:
+    enabled: false
+    api_key: "${DATADOG_API_KEY}"
+    app_key: "${DATADOG_APP_KEY}"
+    
+  new_relic:
+    enabled: false
+    license_key: "${NEW_RELIC_LICENSE_KEY}"
