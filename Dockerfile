@@ -133,7 +133,7 @@ CMD ["python", "-m", "surrogate_optim.cli", "--help"]
 # =============================================================================
 # GPU Stage - For GPU-accelerated workloads
 # =============================================================================
-FROM nvidia/cuda:11.8-devel-ubuntu20.04 as gpu
+FROM nvidia/cuda:12.9.1-devel-ubuntu20.04 as gpu
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
