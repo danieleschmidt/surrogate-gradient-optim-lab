@@ -118,7 +118,7 @@ class MetricsCollector:
         try:
             # Try to get coverage from pytest-cov
             result = subprocess.run(
-                ["python", "-m", "pytest", "--cov=surrogate_optim", "--cov-report=term-missing", "--quiet"],
+                ["python3", "-m", "pytest", "--cov=surrogate_optim", "--cov-report=term-missing", "--quiet"],
                 capture_output=True, text=True, cwd=self.repo_path
             )
             
@@ -136,7 +136,7 @@ class MetricsCollector:
         try:
             # Use radon for complexity analysis
             result = subprocess.run(
-                ["python", "-m", "radon", "cc", "surrogate_optim", "--json"],
+                ["python3", "-m", "radon", "cc", "surrogate_optim", "--json"],
                 capture_output=True, text=True, cwd=self.repo_path
             )
             
@@ -198,7 +198,7 @@ class MetricsCollector:
             import time
             start_time = time.time()
             result = subprocess.run(
-                ["python", "-m", "build"],
+                ["python3", "-m", "build"],
                 capture_output=True, cwd=self.repo_path
             )
             end_time = time.time()
@@ -215,7 +215,7 @@ class MetricsCollector:
             import time
             start_time = time.time()
             result = subprocess.run(
-                ["python", "-m", "pytest", "--quiet"],
+                ["python3", "-m", "pytest", "--quiet"],
                 capture_output=True, cwd=self.repo_path
             )
             end_time = time.time()
@@ -250,7 +250,7 @@ class MetricsCollector:
         """Run performance benchmarks."""
         try:
             result = subprocess.run(
-                ["python", "-m", "pytest", "tests/benchmarks/", "--quiet"],
+                ["python3", "-m", "pytest", "tests/benchmarks/", "--quiet"],
                 capture_output=True, text=True, cwd=self.repo_path
             )
             
@@ -280,7 +280,7 @@ class MetricsCollector:
         """Check for security vulnerabilities."""
         try:
             result = subprocess.run(
-                ["python", "-m", "pip_audit", "--format=json"],
+                ["python3", "-m", "pip_audit", "--format=json"],
                 capture_output=True, text=True
             )
             
