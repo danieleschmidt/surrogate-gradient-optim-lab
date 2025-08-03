@@ -1,551 +1,668 @@
-"""End-to-end integration tests for complete workflows."""
+"""Integration tests for complete surrogate optimization workflows."""
 
-import tempfile
-from pathlib import Path
-from typing import Dict, Any
-
-import jax
-import jax.numpy as jnp
+import numpy as np
 import pytest
+import tempfile
+import os
+from unittest.mock import patch
 
-# These imports would be from actual surrogate_optim package
-# For now, we'll mock the structure
-
-
-class MockSurrogateOptimizer:
-    """Mock surrogate optimizer for testing."""
-    
-    def __init__(self, surrogate_type="neural_network", **kwargs):
-        self.surrogate_type = surrogate_type
-        self.config = kwargs
-        self.is_fitted = False
-    
-    def fit_surrogate(self, data):
-        """Mock fitting method."""
-        self.X_train = data["X"]
-        self.y_train = data["y"]
-        self.is_fitted = True
-        return self
-    
-    def predict(self, x):
-        """Mock prediction method."""
-        if not self.is_fitted:
-            raise ValueError("Model must be fitted first")
-        # Simple quadratic prediction for testing
-        return jnp.sum(x**2)
-    
-    def gradient(self, x):
-        """Mock gradient method."""
-        if not self.is_fitted:
-            raise ValueError("Model must be fitted first")
-        # Gradient of quadratic is 2x
-        return 2.0 * x
-    
-    def optimize(self, initial_point, method="L-BFGS-B", bounds=None, **kwargs):
-        """Mock optimization method."""
-        if not self.is_fitted:
-            raise ValueError("Model must be fitted first")
-        
-        # Simple mock optimization - just return zeros
-        return jnp.zeros_like(initial_point)
+from surrogate_optim import (
+    collect_data,
+    NeuralSurrogate,
+    GPSurrogate,
+    RandomForestSurrogate,
+    HybridSurrogate,
+    SurrogateOptimizer,
+    TrustRegionOptimizer,
+    MultiStartOptimizer,
+    optimize_with_surrogate,
+    benchmark_surrogate,
+    validate_surrogate,
+)
+from surrogate_optim.data import Dataset, ActiveLearner
 
 
-def mock_collect_data(function, n_samples, bounds, sampling="random"):
-    """Mock data collection function."""
-    key = jax.random.PRNGKey(42)
-    n_dims = len(bounds)
-    
-    # Generate random points within bounds
-    X = jax.random.uniform(
-        key,
-        (n_samples, n_dims),
-        minval=jnp.array([b[0] for b in bounds]),
-        maxval=jnp.array([b[1] for b in bounds])
-    )
-    
-    # Evaluate function at points
-    y = jnp.array([function(x) for x in X])
-    
-    return {"X": X, "y": y}
-
-
-@pytest.mark.integration
 class TestCompleteOptimizationWorkflow:
-    """Test complete optimization workflows from start to finish."""
-    
-    def test_basic_2d_optimization_workflow(self):
-        """Test basic 2D optimization workflow."""
-        # Define test function
-        def test_function(x):
-            return jnp.sum(x**2) + 0.1 * jnp.sin(10 * jnp.linalg.norm(x))
+    """Test complete optimization workflows from data collection to optimization."""
+
+    def setup_method(self):
+        """Set up test fixtures."""
+        # Define test problems
+        def rosenbrock_2d(x):
+            """2D Rosenbrock function."""
+            x = np.asarray(x)
+            return -(100.0 * (x[1] - x[0]**2)**2 + (1 - x[0])**2)
+        
+        def ackley_2d(x):
+            """2D Ackley function."""
+            x = np.asarray(x)
+            return -(-20 * np.exp(-0.2 * np.sqrt(0.5 * np.sum(x**2))) 
+                     - np.exp(0.5 * np.sum(np.cos(2 * np.pi * x))) + 20 + np.e)
+        
+        self.test_functions = {
+            "rosenbrock": rosenbrock_2d,
+            "ackley": ackley_2d,
+        }
+        
+        self.bounds = [(-2.0, 2.0), (-2.0, 2.0)]
+        
+    def test_neural_surrogate_workflow(self):
+        """Test complete workflow with neural network surrogate."""
+        function = self.test_functions["rosenbrock"]
         
         # Step 1: Collect data
-        data = mock_collect_data(
-            function=test_function,
-            n_samples=100,
-            bounds=[(-2, 2), (-2, 2)],
-            sampling="sobol"
+        dataset = collect_data(
+            function=function,
+            n_samples=80,
+            bounds=self.bounds,
+            sampling="sobol",
+            random_state=42
         )
         
-        # Validate data collection
-        assert "X" in data
-        assert "y" in data
-        assert data["X"].shape == (100, 2)
-        assert data["y"].shape == (100,)
-        assert jnp.isfinite(data["X"]).all()
-        assert jnp.isfinite(data["y"]).all()
+        assert dataset.n_samples == 80
+        assert dataset.n_dims == 2
         
-        # Step 2: Create and train surrogate
-        optimizer = MockSurrogateOptimizer(
-            surrogate_type="neural_network",
-            hidden_dims=[32, 32],
-            activation="relu"
+        # Step 2: Train surrogate
+        surrogate = NeuralSurrogate(
+            hidden_dims=[32, 16],
+            epochs=100,
+            learning_rate=0.01
         )
         
-        surrogate = optimizer.fit_surrogate(data)
-        assert surrogate.is_fitted
+        with patch('builtins.print'):  # Suppress training output
+            surrogate.fit(dataset.X, dataset.y)
         
-        # Step 3: Test prediction
-        test_point = jnp.array([1.0, 1.0])
-        prediction = surrogate.predict(test_point)
-        assert jnp.isfinite(prediction)
-        
-        # Step 4: Test gradient computation
-        gradient = surrogate.gradient(test_point)
-        assert gradient.shape == test_point.shape
-        assert jnp.isfinite(gradient).all()
-        
-        # Step 5: Optimize
-        x_optimal = optimizer.optimize(
-            initial_point=jnp.array([1.5, 1.5]),
-            method="L-BFGS-B",
-            bounds=[(-2, 2), (-2, 2)]
+        # Step 3: Validate surrogate
+        validation_results = validate_surrogate(
+            surrogate=surrogate,
+            test_function=function,
+            bounds=self.bounds,
+            n_test_points=50,
+            seed=123
         )
         
-        assert x_optimal.shape == (2,)
-        assert jnp.isfinite(x_optimal).all()
-    
-    def test_high_dimensional_workflow(self):
-        """Test workflow with high-dimensional problems."""
-        n_dims = 10
+        # Should achieve reasonable validation performance
+        assert validation_results["r2"] > 0.5
+        assert validation_results["mean_gradient_error"] < 1.0
         
-        def high_dim_function(x):
-            return jnp.sum(x**2) + 0.1 * jnp.sum(x**4)
+        # Step 4: Optimize
+        x0 = np.array([0.0, 0.0])
+        result = optimize_with_surrogate(
+            surrogate=surrogate,
+            x0=x0,
+            bounds=self.bounds,
+            options={"maxiter": 100}
+        )
+        
+        # Should find reasonable solution
+        assert result["success"]
+        # Rosenbrock optimum is at (1, 1)
+        distance_to_optimum = np.linalg.norm(result["x"] - np.array([1.0, 1.0]))
+        assert distance_to_optimum < 0.5
+        
+    def test_gp_surrogate_workflow(self):
+        """Test complete workflow with GP surrogate."""
+        function = self.test_functions["ackley"]
         
         # Collect data
-        bounds = [(-2, 2)] * n_dims
-        data = mock_collect_data(
-            function=high_dim_function,
-            n_samples=500,
-            bounds=bounds
+        dataset = collect_data(
+            function=function,
+            n_samples=50,
+            bounds=self.bounds,
+            sampling="latin_hypercube",
+            random_state=456
         )
         
-        assert data["X"].shape == (500, n_dims)
+        # Train GP surrogate
+        surrogate = GPSurrogate(kernel="rbf", length_scale=0.5)
+        surrogate.fit(dataset.X, dataset.y)
         
-        # Train surrogate
-        optimizer = MockSurrogateOptimizer(
-            surrogate_type="gaussian_process",
-            kernel="rbf"
+        # Optimize
+        result = optimize_with_surrogate(
+            surrogate=surrogate,
+            x0=np.array([1.0, 1.0]),
+            bounds=self.bounds
         )
         
-        surrogate = optimizer.fit_surrogate(data)
+        # Should find solution close to global optimum (0, 0)
+        distance_to_optimum = np.linalg.norm(result["x"])
+        assert distance_to_optimum < 1.0
         
-        # Test optimization
-        initial_point = jnp.ones(n_dims)
-        x_optimal = optimizer.optimize(
-            initial_point=initial_point,
-            bounds=bounds
+    def test_hybrid_surrogate_workflow(self):
+        """Test workflow with hybrid ensemble surrogate."""
+        function = self.test_functions["rosenbrock"]
+        
+        # Collect more data for ensemble
+        dataset = collect_data(
+            function=function,
+            n_samples=100,
+            bounds=self.bounds,
+            sampling="sobol",
+            random_state=789
         )
         
-        assert x_optimal.shape == (n_dims,)
-        assert jnp.isfinite(x_optimal).all()
-    
-    def test_noisy_data_workflow(self):
-        """Test workflow with noisy data."""
-        def noisy_function(x):
-            true_value = jnp.sum(x**2)
-            noise = 0.1 * jax.random.normal(jax.random.PRNGKey(hash(tuple(x.tolist()))), ())
-            return true_value + noise
-        
-        # Collect noisy data
-        data = mock_collect_data(
-            function=noisy_function,
-            n_samples=200,
-            bounds=[(-3, 3), (-3, 3)]
-        )
-        
-        # Train robust surrogate
-        optimizer = MockSurrogateOptimizer(
-            surrogate_type="random_forest",
-            n_estimators=100,
-            max_depth=10
-        )
-        
-        surrogate = optimizer.fit_surrogate(data)
-        
-        # Verify robustness to noise
-        test_points = [
-            jnp.array([0.0, 0.0]),
-            jnp.array([1.0, 1.0]),
-            jnp.array([-1.0, 1.0])
+        # Create hybrid surrogate
+        models = [
+            ("nn", NeuralSurrogate(hidden_dims=[16], epochs=20)),
+            ("gp", GPSurrogate()),
+            ("rf", RandomForestSurrogate(n_estimators=20)),
         ]
         
-        for point in test_points:
-            prediction = surrogate.predict(point)
-            gradient = surrogate.gradient(point)
-            
-            assert jnp.isfinite(prediction)
-            assert jnp.isfinite(gradient).all()
-    
-    def test_multiple_surrogate_types_workflow(self):
-        """Test workflow comparing multiple surrogate types."""
-        def benchmark_function(x):
-            # Rosenbrock function
-            return jnp.sum(100.0 * (x[1:] - x[:-1]**2)**2 + (1 - x[:-1])**2)
+        surrogate = HybridSurrogate(models=models)
         
-        # Collect data once
-        data = mock_collect_data(
-            function=benchmark_function,
-            n_samples=150,
-            bounds=[(-2, 2), (-2, 2)]
+        with patch('builtins.print'):
+            surrogate.fit(dataset.X, dataset.y)
+        
+        # Multi-start optimization for better global search
+        result = MultiStartOptimizer(
+            surrogate=surrogate,
+            n_starts=10,
+            start_method="random"
+        ).optimize_global(bounds=self.bounds)
+        
+        assert result["n_successful"] > 0
+        distance_to_optimum = np.linalg.norm(result["best_point"] - np.array([1.0, 1.0]))
+        assert distance_to_optimum < 1.0
+
+
+class TestActiveLearningWorkflow:
+    """Test active learning workflows."""
+
+    def setup_method(self):
+        """Set up test fixtures."""
+        def complex_function(x):
+            """Complex test function with multiple features."""
+            x = np.asarray(x)
+            return -(x[0]**2 + x[1]**2) + 0.5 * np.sin(4 * x[0]) * np.cos(4 * x[1])
+        
+        self.function = complex_function
+        self.bounds = [(-2.0, 2.0), (-2.0, 2.0)]
+        
+    def test_active_learning_improves_optimization(self):
+        """Test that active learning improves optimization performance."""
+        # Initial random dataset
+        initial_data = collect_data(
+            function=self.function,
+            n_samples=20,
+            bounds=self.bounds,
+            sampling="random",
+            random_state=42
         )
         
-        surrogate_types = [
-            {"type": "neural_network", "config": {"hidden_dims": [32, 32]}},
-            {"type": "gaussian_process", "config": {"kernel": "rbf"}},
-            {"type": "random_forest", "config": {"n_estimators": 50}}
+        # Passive surrogate (trained on initial data only)
+        passive_surrogate = GPSurrogate()
+        passive_surrogate.fit(initial_data.X, initial_data.y)
+        
+        # Active learning
+        learner = ActiveLearner(
+            function=self.function,
+            initial_data=initial_data,
+            surrogate_type="gp"
+        )
+        
+        with patch('builtins.print'):
+            enhanced_data = learner.learn_iteratively(
+                n_iterations=5,
+                batch_size=4,
+                acquisition_function="expected_improvement",
+                bounds=self.bounds
+            )
+        
+        # Active surrogate (trained on enhanced data)
+        active_surrogate = GPSurrogate()
+        active_surrogate.fit(enhanced_data.X, enhanced_data.y)
+        
+        # Compare optimization performance
+        x0 = np.array([1.5, 1.5])
+        
+        passive_result = optimize_with_surrogate(
+            surrogate=passive_surrogate,
+            x0=x0,
+            bounds=self.bounds
+        )
+        
+        active_result = optimize_with_surrogate(
+            surrogate=active_surrogate,
+            x0=x0,
+            bounds=self.bounds
+        )
+        
+        # Active learning should generally lead to better optimization
+        # (or at least not significantly worse)
+        assert active_result["fun"] >= passive_result["fun"] - 0.5
+        
+    def test_different_acquisition_functions(self):
+        """Test active learning with different acquisition functions."""
+        initial_data = collect_data(
+            function=self.function,
+            n_samples=15,
+            bounds=self.bounds,
+            sampling="sobol",
+            random_state=123
+        )
+        
+        acquisition_functions = [
+            "expected_improvement",
+            "upper_confidence_bound",
+            "entropy_search"
         ]
         
         results = {}
         
-        for surrogate_spec in surrogate_types:
-            # Train surrogate
-            optimizer = MockSurrogateOptimizer(
-                surrogate_type=surrogate_spec["type"],
-                **surrogate_spec["config"]
+        for acq_func in acquisition_functions:
+            learner = ActiveLearner(
+                function=self.function,
+                initial_data=initial_data,
+                surrogate_type="gp"
             )
             
-            surrogate = optimizer.fit_surrogate(data)
+            with patch('builtins.print'):
+                enhanced_data = learner.learn_iteratively(
+                    n_iterations=3,
+                    batch_size=3,
+                    acquisition_function=acq_func,
+                    bounds=self.bounds
+                )
             
-            # Optimize
-            x_optimal = optimizer.optimize(
-                initial_point=jnp.array([0.0, 0.0]),
-                bounds=[(-2, 2), (-2, 2)]
+            # Train final surrogate and optimize
+            surrogate = GPSurrogate()
+            surrogate.fit(enhanced_data.X, enhanced_data.y)
+            
+            opt_result = optimize_with_surrogate(
+                surrogate=surrogate,
+                x0=np.array([1.0, 1.0]),
+                bounds=self.bounds
             )
             
-            # Evaluate performance
-            optimal_value = surrogate.predict(x_optimal)
-            
-            results[surrogate_spec["type"]] = {
-                "x_optimal": x_optimal,
-                "optimal_value": optimal_value
+            results[acq_func] = {
+                "data_size": enhanced_data.n_samples,
+                "opt_value": opt_result["fun"],
+                "success": opt_result["success"]
             }
         
-        # Verify all methods produced valid results
-        for method, result in results.items():
-            assert jnp.isfinite(result["x_optimal"]).all(), f"{method} failed"
-            assert jnp.isfinite(result["optimal_value"]), f"{method} failed"
+        # All should produce valid results
+        for acq_func, result in results.items():
+            assert result["data_size"] == 15 + 3 * 3  # Initial + iterations * batch
+            assert result["success"]
 
 
-@pytest.mark.integration
-class TestDataPipelineIntegration:
-    """Test data collection and preprocessing pipelines."""
-    
-    def test_data_collection_pipeline(self):
-        """Test complete data collection pipeline."""
-        def expensive_function(x):
-            # Simulate expensive computation
-            return jnp.sum(x**3) + jnp.sin(jnp.linalg.norm(x))
+class TestTrustRegionWorkflow:
+    """Test trust region optimization workflows."""
+
+    def setup_method(self):
+        """Set up test fixtures."""
+        def noisy_quadratic(x):
+            """Quadratic function with noise."""
+            x = np.asarray(x)
+            return -np.sum(x**2) + 0.1 * np.sin(10 * np.sum(x))
         
-        # Test different sampling strategies
-        sampling_methods = ["random", "sobol", "latin_hypercube"]
-        bounds = [(-1, 1), (-1, 1), (-1, 1)]
+        self.function = noisy_quadratic
+        self.bounds = [(-3.0, 3.0), (-3.0, 3.0)]
         
-        for method in sampling_methods:
-            data = mock_collect_data(
-                function=expensive_function,
-                n_samples=50,
+    def test_trust_region_with_validation(self):
+        """Test trust region optimization with true function validation."""
+        # Collect data and train surrogate
+        dataset = collect_data(
+            function=self.function,
+            n_samples=60,
+            bounds=self.bounds,
+            sampling="sobol",
+            random_state=42
+        )
+        
+        surrogate = NeuralSurrogate(hidden_dims=[32], epochs=50)
+        with patch('builtins.print'):
+            surrogate.fit(dataset.X, dataset.y)
+        
+        # Trust region optimization with validation
+        optimizer = TrustRegionOptimizer(
+            surrogate=surrogate,
+            true_function=self.function,
+            initial_radius=0.5,
+            max_radius=2.0
+        )
+        
+        result = optimizer.optimize(
+            x0=np.array([2.0, 2.0]),
+            max_iterations=20,
+            validate_every=3
+        )
+        
+        assert "x" in result
+        assert "trajectory" in result
+        assert "iterations" in result
+        assert "converged" in result
+        
+        # Should converge to reasonable solution
+        final_point = result["x"]
+        assert np.linalg.norm(final_point) < 1.0  # Close to origin
+        
+    def test_trust_region_radius_adaptation(self):
+        """Test that trust region adapts radius appropriately."""
+        dataset = collect_data(
+            function=self.function,
+            n_samples=40,
+            bounds=self.bounds,
+            sampling="uniform",
+            random_state=456
+        )
+        
+        surrogate = GPSurrogate()
+        surrogate.fit(dataset.X, dataset.y)
+        
+        optimizer = TrustRegionOptimizer(
+            surrogate=surrogate,
+            true_function=self.function,
+            initial_radius=0.1,  # Start small
+            max_radius=1.0
+        )
+        
+        initial_radius = optimizer.radius
+        
+        result = optimizer.optimize(
+            x0=np.array([1.0, 1.0]),
+            max_iterations=15,
+            validate_every=2
+        )
+        
+        # Radius should have adapted during optimization
+        final_radius = optimizer.radius
+        assert final_radius != initial_radius
+        assert 0 < final_radius <= optimizer.max_radius
+
+
+class TestBenchmarkingWorkflow:
+    """Test comprehensive benchmarking workflows."""
+
+    def test_multi_function_benchmark(self):
+        """Test benchmarking across multiple functions and dimensions."""
+        surrogate_model = NeuralSurrogate(hidden_dims=[24], epochs=30)
+        
+        with patch('builtins.print'):
+            results = benchmark_surrogate(
+                surrogate_model=surrogate_model,
+                test_functions=["sphere", "rosenbrock", "ackley"],
+                dimensions=[2, 5],
+                n_trials=3,
+                n_train_samples=40,
+                seed=42
+            )
+        
+        # Check structure
+        assert "function_results" in results
+        assert "summary" in results
+        
+        # Check all functions and dimensions tested
+        for func in ["sphere", "rosenbrock", "ackley"]:
+            assert func in results["function_results"]
+            for dim in [2, 5]:
+                dim_key = f"dim_{dim}"
+                assert dim_key in results["function_results"][func]
+                
+        # Check summary aggregation
+        summary = results["summary"]
+        expected_trials = 3 * 3 * 2  # functions * trials * dimensions
+        assert summary["n_trials_total"] == expected_trials
+        assert 0 <= summary["mean_gap"] <= 1.0
+        assert summary["mean_grad_error"] >= 0
+        
+    def test_surrogate_comparison_benchmark(self):
+        """Test comparing different surrogate types."""
+        test_function_name = "sphere"
+        surrogate_configs = {
+            "neural_network": NeuralSurrogate(hidden_dims=[16], epochs=20),
+            "gaussian_process": GPSurrogate(),
+            "random_forest": RandomForestSurrogate(n_estimators=20),
+        }
+        
+        comparison_results = {}
+        
+        for name, surrogate_model in surrogate_configs.items():
+            with patch('builtins.print'):
+                results = benchmark_surrogate(
+                    surrogate_model=surrogate_model,
+                    test_functions=[test_function_name],
+                    dimensions=[2],
+                    n_trials=3,
+                    n_train_samples=30,
+                    seed=123
+                )
+            
+            comparison_results[name] = results["summary"]["mean_gap"]
+        
+        # All should produce reasonable results
+        for name, mean_gap in comparison_results.items():
+            assert 0 <= mean_gap <= 1.0, f"{name} produced invalid gap: {mean_gap}"
+            
+    def test_benchmark_with_validation(self):
+        """Test benchmarking combined with validation."""
+        surrogate_model = GPSurrogate()
+        
+        # Benchmark
+        with patch('builtins.print'):
+            benchmark_results = benchmark_surrogate(
+                surrogate_model=surrogate_model,
+                test_functions=["sphere"],
+                dimensions=[2],
+                n_trials=2,
+                n_train_samples=30,
+                seed=789
+            )
+        
+        # Separate validation
+        def sphere_function(x):
+            x = np.asarray(x)
+            return -np.sum(x**2)
+        
+        # Train surrogate for validation
+        dataset = collect_data(
+            function=sphere_function,
+            n_samples=30,
+            bounds=[(-2.0, 2.0), (-2.0, 2.0)],
+            sampling="sobol",
+            random_state=789
+        )
+        
+        surrogate = GPSurrogate()
+        surrogate.fit(dataset.X, dataset.y)
+        
+        validation_results = validate_surrogate(
+            surrogate=surrogate,
+            test_function=sphere_function,
+            bounds=[(-2.0, 2.0), (-2.0, 2.0)],
+            n_test_points=50,
+            seed=789
+        )
+        
+        # Results should be consistent
+        benchmark_gap = benchmark_results["function_results"]["sphere"]["dim_2"]["mean_gap"]
+        validation_r2 = validation_results["r2"]
+        
+        # High R² should correspond to low optimality gap
+        if validation_r2 > 0.9:
+            assert benchmark_gap < 0.2
+
+
+class TestEndToEndReproducibility:
+    """Test reproducibility of complete workflows."""
+
+    def test_reproducible_optimization(self):
+        """Test that optimization is reproducible with same seed."""
+        def test_function(x):
+            x = np.asarray(x)
+            return -(x[0] - 1)**2 - (x[1] + 0.5)**2
+        
+        bounds = [(-2.0, 3.0), (-2.0, 2.0)]
+        
+        def run_optimization(seed):
+            # Data collection
+            dataset = collect_data(
+                function=test_function,
+                n_samples=40,
                 bounds=bounds,
-                sampling=method
+                sampling="sobol",
+                random_state=seed
             )
             
-            # Validate data properties
-            assert data["X"].shape == (50, 3)
-            assert data["y"].shape == (50,)
+            # Surrogate training
+            surrogate = NeuralSurrogate(hidden_dims=[16], epochs=20)
+            with patch('builtins.print'):
+                surrogate.fit(dataset.X, dataset.y)
             
-            # Check bounds are respected
-            assert jnp.all(data["X"] >= -1.0)
-            assert jnp.all(data["X"] <= 1.0)
+            # Optimization
+            result = optimize_with_surrogate(
+                surrogate=surrogate,
+                x0=np.array([0.0, 0.0]),
+                bounds=bounds
+            )
             
-            # Check function values are finite
-            assert jnp.isfinite(data["y"]).all()
-    
-    def test_data_preprocessing_pipeline(self):
-        """Test data preprocessing pipeline."""
-        # Generate raw data with different scales
-        key = jax.random.PRNGKey(42)
-        X_raw = jax.random.normal(key, (100, 3)) * jnp.array([1.0, 10.0, 100.0])
-        y_raw = jnp.sum(X_raw**2, axis=1) + jax.random.normal(key, (100,)) * 0.1
+            return result["x"], result["fun"]
         
-        # Mock preprocessing steps
-        def preprocess_data(X, y):
-            # Normalize features
-            X_mean = jnp.mean(X, axis=0)
-            X_std = jnp.std(X, axis=0)
-            X_normalized = (X - X_mean) / X_std
+        # Run twice with same seed
+        point1, value1 = run_optimization(seed=42)
+        point2, value2 = run_optimization(seed=42)
+        
+        # Should be very close (allowing for numerical differences)
+        assert np.allclose(point1, point2, atol=1e-3)
+        assert abs(value1 - value2) < 1e-6
+        
+    def test_reproducible_active_learning(self):
+        """Test reproducible active learning."""
+        def test_function(x):
+            x = np.asarray(x)
+            return np.sum(x**2) + 0.1 * np.sin(5 * np.sum(x))
+        
+        bounds = [(-1.0, 1.0), (-1.0, 1.0)]
+        
+        def run_active_learning(seed):
+            # Initial data
+            initial_data = collect_data(
+                function=test_function,
+                n_samples=10,
+                bounds=bounds,
+                sampling="random",
+                random_state=seed
+            )
             
-            # Standardize targets
-            y_mean = jnp.mean(y)
-            y_std = jnp.std(y)
-            y_normalized = (y - y_mean) / y_std
+            # Active learning
+            learner = ActiveLearner(
+                function=test_function,
+                initial_data=initial_data,
+                surrogate_type="gp"
+            )
             
-            return {
-                "X": X_normalized,
-                "y": y_normalized,
-                "X_mean": X_mean,
-                "X_std": X_std,
-                "y_mean": y_mean,
-                "y_std": y_std
-            }
-        
-        processed_data = preprocess_data(X_raw, y_raw)
-        
-        # Validate preprocessing
-        assert jnp.allclose(jnp.mean(processed_data["X"], axis=0), 0.0, atol=1e-10)
-        assert jnp.allclose(jnp.std(processed_data["X"], axis=0), 1.0, atol=1e-10)
-        assert jnp.allclose(jnp.mean(processed_data["y"]), 0.0, atol=1e-10)
-        assert jnp.allclose(jnp.std(processed_data["y"]), 1.0, atol=1e-10)
-    
-    @pytest.mark.slow
-    def test_large_dataset_pipeline(self):
-        """Test pipeline with large datasets."""
-        def batch_function_evaluation(X_batch):
-            """Evaluate function on batch of points."""
-            return jnp.array([jnp.sum(x**2) for x in X_batch])
-        
-        # Generate large dataset in batches
-        n_total = 10000
-        batch_size = 1000
-        n_dims = 5
-        
-        X_batches = []
-        y_batches = []
-        
-        key = jax.random.PRNGKey(42)
-        for i in range(0, n_total, batch_size):
-            batch_key = jax.random.fold_in(key, i)
-            X_batch = jax.random.uniform(batch_key, (batch_size, n_dims), minval=-2, maxval=2)
-            y_batch = batch_function_evaluation(X_batch)
+            with patch('builtins.print'):
+                final_data = learner.learn_iteratively(
+                    n_iterations=3,
+                    batch_size=2,
+                    acquisition_function="expected_improvement",
+                    bounds=bounds
+                )
             
-            X_batches.append(X_batch)
-            y_batches.append(y_batch)
+            return final_data.X, final_data.y
         
-        # Combine batches
-        X_full = jnp.concatenate(X_batches, axis=0)
-        y_full = jnp.concatenate(y_batches, axis=0)
+        # Run twice with same seed
+        X1, y1 = run_active_learning(seed=123)
+        X2, y2 = run_active_learning(seed=123)
         
-        assert X_full.shape == (n_total, n_dims)
-        assert y_full.shape == (n_total,)
-        assert jnp.isfinite(X_full).all()
-        assert jnp.isfinite(y_full).all()
+        # Should be identical
+        assert np.allclose(X1, X2)
+        assert np.allclose(y1, y2)
 
 
-@pytest.mark.integration 
-class TestModelPersistenceIntegration:
-    """Test model saving and loading integration."""
-    
-    def test_model_save_load_workflow(self, temp_dir):
-        """Test complete model save/load workflow."""
-        # Create and train model
-        def training_function(x):
-            return jnp.sum(x**2) + jnp.sin(jnp.linalg.norm(x))
+class TestErrorHandlingAndRobustness:
+    """Test error handling and robustness of workflows."""
+
+    def test_insufficient_data_handling(self):
+        """Test handling of insufficient training data."""
+        def simple_function(x):
+            return np.sum(np.asarray(x)**2)
         
-        data = mock_collect_data(
-            function=training_function,
-            n_samples=100,
-            bounds=[(-2, 2), (-2, 2)]
+        # Very small dataset
+        dataset = collect_data(
+            function=simple_function,
+            n_samples=5,  # Very small
+            bounds=[(-1.0, 1.0), (-1.0, 1.0)],
+            sampling="random",
+            random_state=42
         )
         
-        optimizer = MockSurrogateOptimizer(
-            surrogate_type="neural_network",
-            hidden_dims=[32, 16]
+        # Should still work but may have warnings
+        surrogate = NeuralSurrogate(hidden_dims=[8], epochs=10)
+        
+        with patch('builtins.print'):
+            surrogate.fit(dataset.X, dataset.y)
+        
+        # Should still be able to predict
+        prediction = surrogate.predict(np.array([0.5, 0.5]))
+        assert isinstance(prediction, (float, np.float64))
+        assert not np.isnan(prediction)
+        
+    def test_optimization_bounds_handling(self):
+        """Test proper handling of optimization bounds."""
+        def bounded_function(x):
+            x = np.asarray(x)
+            # Function that prefers edges of domain
+            return -(abs(x[0]) + abs(x[1]))
+        
+        dataset = collect_data(
+            function=bounded_function,
+            n_samples=30,
+            bounds=[(-2.0, 2.0), (-2.0, 2.0)],
+            sampling="uniform",
+            random_state=123
         )
         
-        trained_model = optimizer.fit_surrogate(data)
+        surrogate = GPSurrogate()
+        surrogate.fit(dataset.X, dataset.y)
         
-        # Test predictions before saving
-        test_point = jnp.array([1.0, 1.0])
-        prediction_before = trained_model.predict(test_point)
-        gradient_before = trained_model.gradient(test_point)
-        
-        # Mock saving (in real implementation, this would serialize the model)
-        model_path = temp_dir / "trained_model.pkl"
-        
-        # Mock save operation
-        model_data = {
-            "surrogate_type": trained_model.surrogate_type,
-            "config": trained_model.config,
-            "X_train": trained_model.X_train,
-            "y_train": trained_model.y_train,
-            "is_fitted": trained_model.is_fitted
-        }
-        
-        # Mock load operation
-        loaded_optimizer = MockSurrogateOptimizer(
-            surrogate_type=model_data["surrogate_type"],
-            **model_data["config"]
+        # Optimize with tight bounds
+        tight_bounds = [(-1.0, 1.0), (-1.0, 1.0)]
+        result = optimize_with_surrogate(
+            surrogate=surrogate,
+            x0=np.array([0.0, 0.0]),
+            bounds=tight_bounds
         )
-        loaded_optimizer.X_train = model_data["X_train"]
-        loaded_optimizer.y_train = model_data["y_train"]
-        loaded_optimizer.is_fitted = model_data["is_fitted"]
         
-        # Test predictions after loading
-        prediction_after = loaded_optimizer.predict(test_point)
-        gradient_after = loaded_optimizer.gradient(test_point)
-        
-        # Verify consistency
-        assert jnp.allclose(prediction_before, prediction_after)
-        assert jnp.allclose(gradient_before, gradient_after)
-    
-    def test_experiment_tracking_workflow(self, temp_dir):
-        """Test experiment tracking and reproducibility."""
-        # Simulate experiment with tracking
-        experiment_config = {
-            "function_name": "rosenbrock",
-            "n_samples": 100,
-            "bounds": [(-2, 2), (-2, 2)],
-            "surrogate_type": "neural_network",
-            "hidden_dims": [32, 32],
-            "random_seed": 42
-        }
-        
-        def run_experiment(config):
-            # Set random seed for reproducibility
-            key = jax.random.PRNGKey(config["random_seed"])
+        # Solution should respect bounds
+        for i, (lower, upper) in enumerate(tight_bounds):
+            assert lower <= result["x"][i] <= upper
             
-            # Define function
-            def rosenbrock(x):
-                return jnp.sum(100.0 * (x[1:] - x[:-1]**2)**2 + (1 - x[:-1])**2)
-            
-            # Collect data
-            data = mock_collect_data(
-                function=rosenbrock,
-                n_samples=config["n_samples"],
-                bounds=config["bounds"]
-            )
-            
-            # Train model
-            optimizer = MockSurrogateOptimizer(
-                surrogate_type=config["surrogate_type"],
-                hidden_dims=config["hidden_dims"]
-            )
-            
-            model = optimizer.fit_surrogate(data)
-            
-            # Optimize
-            x_optimal = optimizer.optimize(
-                initial_point=jnp.array([0.0, 0.0]),
-                bounds=config["bounds"]
-            )
-            
-            # Return results
-            return {
-                "x_optimal": x_optimal,
-                "optimal_value": model.predict(x_optimal),
-                "config": config
-            }
+    def test_degenerate_function_handling(self):
+        """Test handling of degenerate/constant functions."""
+        def constant_function(x):
+            return 5.0  # Always return constant
         
-        # Run experiment twice with same config
-        result1 = run_experiment(experiment_config)
-        result2 = run_experiment(experiment_config)
+        dataset = collect_data(
+            function=constant_function,
+            n_samples=20,
+            bounds=[(-1.0, 1.0), (-1.0, 1.0)],
+            sampling="uniform",
+            random_state=456
+        )
         
-        # Results should be identical for reproducibility
-        assert jnp.allclose(result1["x_optimal"], result2["x_optimal"])
-        assert jnp.allclose(result1["optimal_value"], result2["optimal_value"])
+        # All y values should be the same
+        assert np.allclose(dataset.y, 5.0)
         
-        # Test with different seed
-        experiment_config["random_seed"] = 123
-        result3 = run_experiment(experiment_config)
+        # Surrogate should still fit (though gradients may be zero)
+        surrogate = RandomForestSurrogate(n_estimators=10)
+        surrogate.fit(dataset.X, dataset.y)
         
-        # Results should be different with different seed
-        # (though in this mock case, they might be the same due to simplification)
-        assert result1["config"]["random_seed"] != result3["config"]["random_seed"]
+        prediction = surrogate.predict(np.array([0.5, 0.5]))
+        assert abs(prediction - 5.0) < 1.0  # Should predict close to constant
 
 
-@pytest.mark.integration
-@pytest.mark.slow
-class TestPerformanceIntegration:
-    """Test performance characteristics of complete workflows."""
-    
-    def test_training_time_scaling(self):
-        """Test that training time scales reasonably with data size."""
-        import time
-        
-        def benchmark_function(x):
-            return jnp.sum(x**2) + 0.1 * jnp.sum(jnp.sin(5 * x))
-        
-        sample_sizes = [50, 100, 200, 500]
-        training_times = []
-        
-        for n_samples in sample_sizes:
-            data = mock_collect_data(
-                function=benchmark_function,
-                n_samples=n_samples,
-                bounds=[(-2, 2), (-2, 2)]
-            )
-            
-            optimizer = MockSurrogateOptimizer(
-                surrogate_type="neural_network",
-                hidden_dims=[32, 32]
-            )
-            
-            start_time = time.time()
-            optimizer.fit_surrogate(data)
-            training_time = time.time() - start_time
-            
-            training_times.append(training_time)
-        
-        # Training time should increase with data size but not excessively
-        for i in range(1, len(training_times)):
-            time_ratio = training_times[i] / training_times[i-1]
-            sample_ratio = sample_sizes[i] / sample_sizes[i-1]
-            
-            # Time should not increase faster than O(n^2)
-            assert time_ratio <= sample_ratio**2 + 1.0  # Allow some overhead
-    
-    def test_memory_usage_workflow(self):
-        """Test memory usage in complete workflow."""
-        import psutil
-        import os
-        
-        process = psutil.Process(os.getpid())
-        initial_memory = process.memory_info().rss / 1024 / 1024  # MB
-        
-        # Run workflow with moderately large data
-        def memory_test_function(x):
-            return jnp.sum(x**3) + jnp.sum(jnp.sin(x))
-        
-        data = mock_collect_data(
-            function=memory_test_function,
-            n_samples=1000,
-            bounds=[(-2, 2)] * 5  # 5D problem
-        )
-        
-        optimizer = MockSurrogateOptimizer(
-            surrogate_type="neural_network",
-            hidden_dims=[64, 64, 32]
-        )
-        
-        model = optimizer.fit_surrogate(data)
-        
-        # Run multiple predictions
-        test_points = [jnp.array([i/10.0] * 5) for i in range(100)]
-        predictions = [model.predict(point) for point in test_points]
-        
-        final_memory = process.memory_info().rss / 1024 / 1024  # MB
-        memory_increase = final_memory - initial_memory
-        
-        # Memory increase should be reasonable (threshold: 200MB)
-        assert memory_increase < 200, f"Excessive memory usage: {memory_increase:.1f}MB"
-        assert len(predictions) == 100
-        assert all(jnp.isfinite(p) for p in predictions)
+@pytest.fixture
+def temp_directory():
+    """Create temporary directory for testing file operations."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        yield temp_dir
+
+
+@pytest.fixture
+def simple_test_function():
+    """Simple test function for integration tests."""
+    def func(x):
+        x = np.asarray(x)
+        return -np.sum(x**2) + 0.1 * np.sin(5 * np.sum(x))
+    return func
