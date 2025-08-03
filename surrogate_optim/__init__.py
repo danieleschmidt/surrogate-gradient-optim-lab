@@ -10,13 +10,47 @@ __email__ = "team@terragon-labs.com"
 # Version information
 VERSION = __version__
 
-# Core imports (will be implemented in future phases)
-# from .models import *
-# from .optimizers import *
-# from .data import *
-# from .visualization import *
+# Core imports
+from .models import (
+    Surrogate,
+    NeuralSurrogate,
+    GPSurrogate,
+    RandomForestSurrogate,
+    HybridSurrogate,
+)
+from .optimizers import (
+    SurrogateOptimizer,
+    TrustRegionOptimizer,
+    MultiStartOptimizer,
+)
+from .data import (
+    Dataset,
+    DataCollector,
+    collect_data,
+)
+from .utils import (
+    benchmark_surrogate,
+    optimize_with_surrogate,
+)
 
 __all__ = [
     "__version__",
     "VERSION",
+    # Models
+    "Surrogate",
+    "NeuralSurrogate",
+    "GPSurrogate",
+    "RandomForestSurrogate",
+    "HybridSurrogate",
+    # Optimizers
+    "SurrogateOptimizer",
+    "TrustRegionOptimizer",
+    "MultiStartOptimizer",
+    # Data
+    "Dataset",
+    "DataCollector",
+    "collect_data",
+    # Utils
+    "benchmark_surrogate",
+    "optimize_with_surrogate",
 ]
