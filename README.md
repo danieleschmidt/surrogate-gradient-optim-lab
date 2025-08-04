@@ -1,6 +1,6 @@
 # surrogate-gradient-optim-lab
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/your-org/surrogate-gradient-optim-lab/ci.yml?branch=main)](https://github.com/your-org/surrogate-gradient-optim-lab/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/danieleschmidt/surrogate-gradient-optim-lab/ci.yml?branch=main)](https://github.com/danieleschmidt/surrogate-gradient-optim-lab/actions)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![JAX](https://img.shields.io/badge/JAX-0.4+-orange.svg)](https://github.com/google/jax)
@@ -41,7 +41,7 @@ pip install surrogate-gradient-optim-lab
 ### From Source with CUDA
 
 ```bash
-git clone https://github.com/your-org/surrogate-gradient-optim-lab
+git clone https://github.com/danieleschmidt/surrogate-gradient-optim-lab
 cd surrogate-gradient-optim-lab
 
 # Install with GPU support
@@ -51,8 +51,8 @@ pip install -e ".[cuda]"
 ### Docker Installation
 
 ```bash
-docker pull your-org/surrogate-optim:latest
-docker run -it --gpus all your-org/surrogate-optim:latest
+docker pull danieleschmidt/surrogate-optim:latest
+docker run -it --gpus all danieleschmidt/surrogate-optim:latest
 ```
 
 ## ⚡ Quick Start
@@ -647,7 +647,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/surrogate-gradient-optim-lab
+git clone https://github.com/danieleschmidt/surrogate-gradient-optim-lab
 cd surrogate-gradient-optim-lab
 
 # Install dev dependencies
@@ -673,10 +673,10 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## 📞 Support
 
-- 📧 Email: surrogate-optim@your-org.com
-- 💬 Discord: [Join our community](https://discord.gg/your-org)
-- 📖 Documentation: [Full docs](https://docs.your-org.com/surrogate-optim)
-- 🎓 Tutorial: [Surrogate Optimization](https://learn.your-org.com/surrogate)
+- 📧 Email: surrogate-optim@danieleschmidt.com
+- 💬 Discord: [Join our community](https://discord.gg/danieleschmidt)
+- 📖 Documentation: [Full docs](https://docs.danieleschmidt.com/surrogate-optim)
+- 🎓 Tutorial: [Surrogate Optimization](https://learn.danieleschmidt.com/surrogate)
 
 ## 📚 References
 
