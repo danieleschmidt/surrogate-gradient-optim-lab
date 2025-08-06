@@ -155,7 +155,8 @@ class NeuralSurrogate(Surrogate):
                 batch_y = y_shuffled[start_idx:end_idx]
                 
                 # Compute gradients
-                loss_value, grads = jax.value_and_grad(self._loss_fn)(self.params, batch_x, batch_y)\n                epoch_loss += loss_value
+                loss_value, grads = jax.value_and_grad(self._loss_fn)(self.params, batch_x, batch_y)
+                epoch_loss += loss_value
                 
                 # Update parameters with momentum
                 for key in self.params:
