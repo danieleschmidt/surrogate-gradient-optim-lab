@@ -12,6 +12,8 @@ from .models.neural import NeuralSurrogate
 from .models.random_forest import RandomForestSurrogate
 from .optimizers.base import OptimizationResult
 from .optimizers.gradient_descent import GradientDescentOptimizer
+from .optimizers.trust_region import TrustRegionOptimizer
+from .optimizers.multi_start import MultiStartOptimizer
 
 
 class SurrogateOptimizer:
@@ -66,9 +68,11 @@ class SurrogateOptimizer:
         """Create optimizer based on configuration."""
         if self.optimizer_type == "gradient_descent":
             return GradientDescentOptimizer(**self.optimizer_params)
+        elif self.optimizer_type == "trust_region":
+            return TrustRegionOptimizer(**self.optimizer_params)
+        elif self.optimizer_type == "multi_start":
+            return MultiStartOptimizer(**self.optimizer_params)
         else:
-            # For now, only gradient descent is implemented
-            # Future: TrustRegionOptimizer, MultiStartOptimizer
             raise ValueError(f"Unknown optimizer type: {self.optimizer_type}")
     
     def fit_surrogate(self, data: Union[Dataset, Dict[str, Array]]) -> "SurrogateOptimizer":
