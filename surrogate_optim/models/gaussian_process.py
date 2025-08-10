@@ -1,116 +1,252 @@
-"""Gaussian Process surrogate model implementation."""
+"""Gaussian process surrogate model using scikit-learn with JAX integration."""
 
-from typing import Optional
+from typing import Any, Dict, List, Optional, Union, Tuple
+import warnings
 
-import jax
+import numpy as np
 import jax.numpy as jnp
-from jax import Array, grad, jit, vmap
-from scipy.optimize import minimize
+from jax import Array, grad, vmap, jit
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, Matern, WhiteKernel
 
-from .base import Dataset, Surrogate
+from .base import Surrogate, Dataset
 
 
 class GPSurrogate(Surrogate):
     """Gaussian Process surrogate model with analytical gradients.
     
-    Combines scikit-learn's GP implementation with JAX for gradient computation.
-    Provides both predictions and uncertainty quantification.
+    Uses scikit-learn's GaussianProcessRegressor with JAX integration
+    for efficient gradient computation.
     """
     
     def __init__(
         self,
         kernel: str = "rbf",
         length_scale: float = 1.0,
+        nu: float = 1.5,
         noise_level: float = 1e-5,
-        alpha: float = 1e-10,
+        n_restarts_optimizer: int = 5,
         normalize_y: bool = True,
-        n_restarts_optimizer: int = 10,
+        alpha: float = 1e-10,
     ):
-        """Initialize Gaussian Process surrogate.
+        """Initialize GP surrogate.
         
         Args:
-            kernel: Kernel type ('rbf', 'matern32', 'matern52', 'auto')
-            length_scale: Initial length scale for the kernel
-            noise_level: Noise level for observations
-            alpha: Value added to diagonal for numerical stability
-            normalize_y: Whether to normalize target values
-            n_restarts_optimizer: Number of restarts for hyperparameter optimization
+            kernel: Kernel type ('rbf', 'matern', 'auto')
+            length_scale: Initial length scale for kernel
+            nu: Nu parameter for Matern kernel
+            noise_level: Noise level for WhiteKernel
+            n_restarts_optimizer: Number of optimizer restarts
+            normalize_y: Whether to normalize targets
+            alpha: Value for diagonal regularization
         """
-        self.kernel_name = kernel
+        self.kernel_type = kernel
         self.length_scale = length_scale
+        self.nu = nu
         self.noise_level = noise_level
-        self.alpha = alpha
-        self.normalize_y = normalize_y
         self.n_restarts_optimizer = n_restarts_optimizer
+        self.normalize_y = normalize_y
+        self.alpha = alpha
         
-        # Model components
-        self.gp = None
-        self.X_train = None
-        self.y_train = None
-        self.input_dim = None
+        # Create kernel
+        self.kernel = self._create_kernel()
         
-        # Compiled JAX functions
+        # Initialize GP
+        self.gp = GaussianProcessRegressor(
+            kernel=self.kernel,
+            alpha=alpha,
+            n_restarts_optimizer=n_restarts_optimizer,
+            normalize_y=normalize_y,
+            copy_X_train=True
+        )
+        
+        # JAX-compiled functions for gradients
         self._jax_predict_fn = None
         self._jax_gradient_fn = None
+        
+        # Training data storage
+        self.X_train = None
+        self.y_train = None
     
-    def _create_kernel(self, input_dim: int):
-        """Create kernel based on configuration."""
-        if self.kernel_name == "rbf":
+    def _create_kernel(self):
+        """Create kernel based on specification."""
+        if self.kernel_type in ["rbf", "gaussian"]:
             base_kernel = RBF(length_scale=self.length_scale)
-        elif self.kernel_name == "matern32":
-            base_kernel = Matern(length_scale=self.length_scale, nu=1.5)
-        elif self.kernel_name == "matern52":
-            base_kernel = Matern(length_scale=self.length_scale, nu=2.5)
-        elif self.kernel_name == "auto":
-            # Automatic kernel selection - use RBF + Matern combination
-            base_kernel = RBF(length_scale=self.length_scale) + Matern(length_scale=self.length_scale, nu=2.5)
+        elif self.kernel_type == "matern":
+            if self.nu not in [0.5, 1.5, 2.5]:
+                warnings.warn(
+                    f"Matern kernel with nu={self.nu} requires specialized implementation. "
+                    f"Currently supported: nu=1.5, nu=2.5"
+                )
+            base_kernel = Matern(length_scale=self.length_scale, nu=self.nu)
+        elif self.kernel_type == "auto":
+            # Combination kernel for flexibility
+            rbf = RBF(length_scale=self.length_scale)
+            matern = Matern(length_scale=self.length_scale, nu=1.5)
+            base_kernel = rbf + matern
         else:
-            raise ValueError(f"Unknown kernel: {self.kernel_name}")
+            raise ValueError(f"Unknown kernel type: {self.kernel_type}")
         
-        # Add white noise kernel for numerical stability
+        # Add noise kernel
         if self.noise_level > 0:
-            kernel = base_kernel + WhiteKernel(noise_level=self.noise_level)
+            noise_kernel = WhiteKernel(noise_level=self.noise_level)
+            return base_kernel + noise_kernel
         else:
-            kernel = base_kernel
-        
-        return kernel
+            return base_kernel
     
     def fit(self, dataset: Dataset) -> "GPSurrogate":
-        """Train the Gaussian Process model."""
-        self.input_dim = dataset.n_dims
+        """Fit GP to training data."""
+        # Store training data
         self.X_train = dataset.X
         self.y_train = dataset.y
         
-        # Create and configure GP
-        kernel = self._create_kernel(self.input_dim)
-        self.gp = GaussianProcessRegressor(
-            kernel=kernel,
-            alpha=self.alpha,
-            normalize_y=self.normalize_y,
-            n_restarts_optimizer=self.n_restarts_optimizer,
-            random_state=42,
-        )
+        # Convert JAX arrays to numpy for sklearn
+        X_np = np.asarray(dataset.X)
+        y_np = np.asarray(dataset.y)
         
-        # Fit the GP
-        print("Training Gaussian Process...")
-        self.gp.fit(self.X_train, self.y_train)
-        print(f"GP trained. Final kernel: {self.gp.kernel_}")
+        # Fit GP
+        self.gp.fit(X_np, y_np)
         
-        # Create JAX-based prediction function for gradients
+        # Setup JAX functions for gradients
         self._setup_jax_functions()
         
         return self
     
     def _setup_jax_functions(self):
-        """Setup JAX functions for efficient gradient computation."""
-        # Convert GP parameters to JAX arrays for gradient computation
-        K_inv_y = jnp.array(self.gp.alpha_)  # This is K^(-1) @ y from sklearn
-        X_train_jax = jnp.array(self.X_train)
+        """Setup JAX-compiled functions for efficient gradient computation."""
+        try:
+            # Get inverse of kernel matrix for predictions
+            K_inv_y = self.gp.alpha_
+            X_train_jax = jnp.array(self.X_train)
+            
+            # Get kernel hyperparameters
+            kernel_params = self.gp.kernel_.get_params()
+            
+            def jax_rbf_kernel(x1, x2, length_scale=1.0):
+                """JAX implementation of RBF kernel."""
+                diff = x1 - x2
+                return jnp.exp(-0.5 * jnp.sum(diff**2) / (length_scale**2))
+            
+            def jax_predict(x):
+                """JAX-based prediction function."""
+                # Compute kernel vector between x and training points
+                k_vec = vmap(lambda x_train: jax_rbf_kernel(x, x_train, self.gp.kernel_.k1.length_scale))(X_train_jax)
+                
+                # Prediction is k^T @ K^(-1) @ y
+                prediction = jnp.dot(k_vec, K_inv_y)
+                
+                # Add mean if normalize_y was used
+                if self.normalize_y:
+                    prediction += self.gp._y_train_mean
+                
+                return prediction
+            
+            # Compile functions
+            self._jax_predict_fn = jit(jax_predict)
+            self._jax_gradient_fn = jit(grad(jax_predict))
+            
+        except Exception as e:
+            warnings.warn(f"Failed to setup JAX functions: {e}. Using fallback methods.")
+            self._jax_predict_fn = None
+            self._jax_gradient_fn = None
+    
+    def predict(self, x: Array) -> Array:
+        """Predict function values."""
+        if self.gp is None:
+            raise ValueError("Model must be trained before prediction")
         
-        # Get kernel hyperparameters
-        kernel_params = self.gp.kernel_.get_params()
+        # Convert JAX array to numpy for sklearn
+        x_np = jnp.asarray(x)
         
-        def jax_rbf_kernel(x1, x2, length_scale=1.0):
-            \"\"\"JAX implementation of RBF kernel.\"\"\"\n            diff = x1 - x2\n            return jnp.exp(-0.5 * jnp.sum(diff**2) / (length_scale**2))\n        \n        def jax_predict(x):\n            \"\"\"JAX-based prediction function.\"\"\"\n            # Compute kernel vector between x and training points\n            k_vec = vmap(lambda x_train: jax_rbf_kernel(x, x_train, self.gp.kernel_.k1.length_scale))(X_train_jax)\n            \n            # Prediction is k^T @ K^(-1) @ y\n            prediction = jnp.dot(k_vec, K_inv_y)\n            \n            # Add mean if normalize_y was used\n            if self.normalize_y:\n                prediction += self.gp._y_train_mean\n            \n            return prediction\n        \n        # Compile functions\n        self._jax_predict_fn = jit(jax_predict)\n        self._jax_gradient_fn = jit(grad(jax_predict))\n    \n    def predict(self, x: Array) -> Array:\n        \"\"\"Predict function values.\"\"\"\n        if self.gp is None:\n            raise ValueError(\"Model must be trained before prediction\")\n        \n        # Convert JAX array to numpy for sklearn\n        x_np = jnp.asarray(x)\n        \n        if x_np.ndim == 1:\n            x_np = x_np[None, :]\n            single_point = True\n        else:\n            single_point = False\n        \n        # Use sklearn GP for prediction\n        predictions, _ = self.gp.predict(x_np, return_std=True)\n        \n        if single_point:\n            return jnp.array(predictions[0])\n        return jnp.array(predictions)\n    \n    def gradient(self, x: Array) -> Array:\n        \"\"\"Compute analytical gradients of the GP mean function.\"\"\"\n        if self.gp is None:\n            raise ValueError(\"Model must be trained before gradient computation\")\n        \n        if self._jax_gradient_fn is None:\n            # Fallback to finite differences if JAX setup failed\n            return self._finite_difference_gradient(x)\n        \n        # Use JAX for exact gradients\n        if x.ndim == 1:\n            return self._jax_gradient_fn(x)\n        else:\n            return vmap(self._jax_gradient_fn)(x)\n    \n    def _finite_difference_gradient(self, x: Array, eps: float = 1e-6) -> Array:\n        \"\"\"Compute gradients using finite differences as fallback.\"\"\"\n        if x.ndim == 1:\n            x = x[None, :]\n            single_point = True\n        else:\n            single_point = False\n        \n        gradients = jnp.zeros_like(x)\n        \n        for i in range(x.shape[1]):\n            x_plus = x.at[:, i].add(eps)\n            x_minus = x.at[:, i].add(-eps)\n            \n            y_plus = self.predict(x_plus)\n            y_minus = self.predict(x_minus)\n            \n            gradients = gradients.at[:, i].set((y_plus - y_minus) / (2 * eps))\n        \n        if single_point:\n            return gradients[0]\n        return gradients\n    \n    def uncertainty(self, x: Array) -> Array:\n        \"\"\"Compute prediction uncertainty (standard deviation).\"\"\"\n        if self.gp is None:\n            raise ValueError(\"Model must be trained before uncertainty computation\")\n        \n        # Convert JAX array to numpy for sklearn\n        x_np = jnp.asarray(x)\n        \n        if x_np.ndim == 1:\n            x_np = x_np[None, :]\n            single_point = True\n        else:\n            single_point = False\n        \n        # Use sklearn GP for uncertainty\n        _, std = self.gp.predict(x_np, return_std=True)\n        \n        if single_point:\n            return jnp.array(std[0])\n        return jnp.array(std)\n    \n    def predict_with_uncertainty(self, x: Array) -> tuple[Array, Array]:\n        \"\"\"Predict with uncertainty in a single call for efficiency.\"\"\"\n        if self.gp is None:\n            raise ValueError(\"Model must be trained before prediction\")\n        \n        # Convert JAX array to numpy for sklearn\n        x_np = jnp.asarray(x)\n        \n        if x_np.ndim == 1:\n            x_np = x_np[None, :]\n            single_point = True\n        else:\n            single_point = False\n        \n        # Use sklearn GP for prediction with uncertainty\n        predictions, std = self.gp.predict(x_np, return_std=True)\n        \n        if single_point:\n            return jnp.array(predictions[0]), jnp.array(std[0])\n        return jnp.array(predictions), jnp.array(std)
+        if x_np.ndim == 1:
+            x_np = x_np[None, :]
+            single_point = True
+        else:
+            single_point = False
+        
+        # Use sklearn GP for prediction
+        predictions, _ = self.gp.predict(x_np, return_std=True)
+        
+        if single_point:
+            return jnp.array(predictions[0])
+        return jnp.array(predictions)
+    
+    def gradient(self, x: Array) -> Array:
+        """Compute analytical gradients of the GP mean function."""
+        if self.gp is None:
+            raise ValueError("Model must be trained before gradient computation")
+        
+        if self._jax_gradient_fn is None:
+            # Fallback to finite differences if JAX setup failed
+            return self._finite_difference_gradient(x)
+        
+        # Use JAX for exact gradients
+        if x.ndim == 1:
+            return self._jax_gradient_fn(x)
+        else:
+            return vmap(self._jax_gradient_fn)(x)
+    
+    def _finite_difference_gradient(self, x: Array, eps: float = 1e-6) -> Array:
+        """Compute gradients using finite differences as fallback."""
+        if x.ndim == 1:
+            x = x[None, :]
+            single_point = True
+        else:
+            single_point = False
+        
+        gradients = jnp.zeros_like(x)
+        
+        for i in range(x.shape[1]):
+            x_plus = x.at[:, i].add(eps)
+            x_minus = x.at[:, i].add(-eps)
+            
+            y_plus = self.predict(x_plus)
+            y_minus = self.predict(x_minus)
+            
+            gradients = gradients.at[:, i].set((y_plus - y_minus) / (2 * eps))
+        
+        if single_point:
+            return gradients[0]
+        return gradients
+    
+    def uncertainty(self, x: Array) -> Array:
+        """Compute prediction uncertainty (standard deviation)."""
+        if self.gp is None:
+            raise ValueError("Model must be trained before uncertainty computation")
+        
+        # Convert JAX array to numpy for sklearn
+        x_np = jnp.asarray(x)
+        
+        if x_np.ndim == 1:
+            x_np = x_np[None, :]
+            single_point = True
+        else:
+            single_point = False
+        
+        # Use sklearn GP for uncertainty
+        _, std = self.gp.predict(x_np, return_std=True)
+        
+        if single_point:
+            return jnp.array(std[0])
+        return jnp.array(std)
+    
+    def predict_with_uncertainty(self, x: Array) -> Tuple[Array, Array]:
+        """Predict with uncertainty in a single call for efficiency."""
+        if self.gp is None:
+            raise ValueError("Model must be trained before prediction")
+        
+        # Convert JAX array to numpy for sklearn
+        x_np = jnp.asarray(x)
+        
+        if x_np.ndim == 1:
+            x_np = x_np[None, :]
+            single_point = True
+        else:
+            single_point = False
+        
+        # Use sklearn GP for prediction with uncertainty
+        predictions, std = self.gp.predict(x_np, return_std=True)
+        
+        if single_point:
+            return jnp.array(predictions[0]), jnp.array(std[0])
+        return jnp.array(predictions), jnp.array(std)
