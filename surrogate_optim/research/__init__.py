@@ -22,6 +22,18 @@ from .experimental_suite import (
     run_research_experiments,
 )
 
+from .validation_pipeline import (
+    ValidationStatus,
+    ResearchDomain,
+    ValidationConfig,
+    ValidationResult,
+    StatisticalAnalysis,
+    ComparativeAnalysis,
+    ResearchValidationPipeline,
+    run_algorithm_validation,
+    run_comparative_study,
+)
+
 __all__ = [
     # Novel algorithms
     "PhysicsInformedSurrogate",
@@ -41,4 +53,15 @@ __all__ = [
     "ComparisonStudy",
     "AblationStudy",
     "run_research_experiments",
+    
+    # Validation pipeline
+    "ValidationStatus",
+    "ResearchDomain", 
+    "ValidationConfig",
+    "ValidationResult",
+    "StatisticalAnalysis",
+    "ComparativeAnalysis",
+    "ResearchValidationPipeline",
+    "run_algorithm_validation",
+    "run_comparative_study",
 ]

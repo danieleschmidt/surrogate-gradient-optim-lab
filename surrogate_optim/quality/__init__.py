@@ -4,6 +4,7 @@ from .quality_gates import *
 from .regression_tests import *
 from .security_checks import *
 from .compliance import *
+from .statistical_validation import *
 
 __all__ = [
     "QualityGate",
@@ -13,4 +14,10 @@ __all__ = [
     "ComplianceChecker",
     "run_quality_gates",
     "generate_quality_report",
+    # Statistical validation
+    "StatisticalValidator",
+    "StatisticalTestResult",
+    "StatisticalTest",
+    "StatisticalQualityGate",
+    "ConvergenceValidationGate",
 ]

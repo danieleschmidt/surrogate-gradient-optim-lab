@@ -17,20 +17,18 @@ from .prometheus_metrics import (
     MetricType
 )
 
-from .health_monitoring import (
-    HealthChecker,
-    HealthStatus,
-    ComponentHealth,
-    register_health_check,
-    get_system_health
-)
-
-from .alerting import (
-    AlertManager,
-    Alert,
+from .monitoring_dashboard import (
     AlertSeverity,
-    NotificationChannel,
-    send_alert
+    AlertStatus,
+    Alert,
+    MetricSnapshot,
+    MetricAggregator,
+    AlertManager,
+    MonitoringDashboard,
+    get_global_dashboard,
+    start_monitoring,
+    stop_monitoring,
+    get_monitoring_report,
 )
 
 __all__ = [
@@ -49,17 +47,16 @@ __all__ = [
     'register_metric', 
     'MetricType',
     
-    # Health
-    'HealthChecker',
-    'HealthStatus',
-    'ComponentHealth',
-    'register_health_check',
-    'get_system_health',
-    
-    # Alerting
-    'AlertManager',
+    # Monitoring dashboard
+    'AlertSeverity',
+    'AlertStatus',
     'Alert',
-    'AlertSeverity', 
-    'NotificationChannel',
-    'send_alert'
+    'MetricSnapshot',
+    'MetricAggregator',
+    'AlertManager',
+    'MonitoringDashboard',
+    'get_global_dashboard',
+    'start_monitoring',
+    'stop_monitoring',
+    'get_monitoring_report',
 ]
