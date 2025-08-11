@@ -4,6 +4,7 @@ from .caching import *
 from .parallel import *
 from .memory import *
 from .profiling import *
+from .gpu_acceleration import *
 
 __all__ = [
     "LRUCache",
@@ -15,4 +16,10 @@ __all__ = [
     "BatchProcessor",
     "ProfiledOptimizer",
     "performance_monitor",
+    # GPU acceleration
+    "GPUManager",
+    "GPUOptimizedSurrogate",
+    "MultiGPUOptimizer",
+    "enable_gpu_optimizations",
+    "GPUStatus",
 ]
