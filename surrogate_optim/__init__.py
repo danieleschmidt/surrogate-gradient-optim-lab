@@ -15,14 +15,15 @@ from .models import *
 from .optimizers import *
 from .data import *
 
-# Main interface classes
-from .core import SurrogateOptimizer
+# Main interface classes  
+# from .core import SurrogateOptimizer  # Temporarily disabled due to circular import
 
 __all__ = [
     "__version__",
     "VERSION",
     # Core classes
     "SurrogateOptimizer",
+    "EnhancedSurrogateOptimizer",
     # Models
     "Surrogate",
     "Dataset", 
