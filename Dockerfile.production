@@ -75,7 +75,7 @@ USER appuser
 CMD ["python", "-m", "surrogate_optim.cli", "--dev"]
 
 # Research stage (with GPU support)
-FROM nvidia/cuda:12.1-devel-ubuntu22.04 as research
+FROM nvidia/cuda:13.0.0-devel-ubuntu22.04 as research
 
 # Install Python 3.11
 RUN apt-get update && apt-get install -y \
