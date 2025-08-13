@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+import jax.numpy as jnp
 from jax import Array
 
 from ..models.base import Surrogate
