@@ -148,6 +148,104 @@ class PhysicsInformedSurrogate:
         v = [jnp.zeros_like(p) for layer in self.params for p in layer]
         
         # Training loop
+        for epoch in range(1000):
+            grads = grad_fn(self.params)
+            
+            # Flatten and unflatten for Adam
+            flat_params = [p for layer in self.params for p in layer]
+            flat_grads = [g for layer_grads in grads for g in layer_grads]
+            
+            # Adam update
+            for i, (param, grad_val, m_val, v_val) in enumerate(zip(flat_params, flat_grads, m, v)):
+                m[i] = beta1 * m_val + (1 - beta1) * grad_val
+                v[i] = beta2 * v_val + (1 - beta2) * grad_val**2
+                
+                m_hat = m[i] / (1 - beta1**(epoch + 1))
+                v_hat = v[i] / (1 - beta2**(epoch + 1))
+                
+                flat_params[i] = param - learning_rate * m_hat / (jnp.sqrt(v_hat) + eps)
+            
+            # Reconstruct parameter structure
+            param_idx = 0
+            new_params = []
+            for layer in self.params:
+                layer_params = []
+                for p in layer:
+                    layer_params.append(flat_params[param_idx])
+                    param_idx += 1
+                new_params.append(tuple(layer_params))
+            self.params = new_params
+            
+            # Early stopping
+            if epoch % 100 == 0:
+                current_loss = loss_fn(self.params)
+                if current_loss < 1e-6:
+                    break
+        
+        self.is_fitted = True
+        return self
+    
+    def predict(self, x: Array) -> Array:
+        """Predict function values using the physics-informed surrogate."""
+        if not self.is_fitted:
+            raise ValueError("Model must be fitted before prediction")
+        
+        if x.ndim == 1:
+            return self._forward_pass(self.params, x)
+        else:
+            return vmap(lambda xi: self._forward_pass(self.params, xi))(x)
+    
+    def gradient(self, x: Array) -> Array:
+        """Compute gradients using automatic differentiation."""
+        if not self.is_fitted:
+            raise ValueError("Model must be fitted before gradient computation")
+        
+        grad_fn = grad(lambda xi: self._forward_pass(self.params, xi))
+        
+        if x.ndim == 1:
+            return grad_fn(x)
+        else:
+            return vmap(grad_fn)(x)
+
+
+class AdaptiveAcquisitionOptimizer:
+    """Novel adaptive acquisition function that balances exploration and exploitation.
+    
+    This algorithm dynamically adjusts acquisition strategies based on optimization progress.
+    """
+    
+    def __init__(
+        self,
+        initial_strategy: str = "expected_improvement",
+        adaptation_rate: float = 0.1,
+        strategies: List[str] = None,
+    ):
+        """Initialize adaptive acquisition optimizer.
+        
+        Args:
+            initial_strategy: Starting acquisition strategy
+            adaptation_rate: Rate of strategy adaptation
+            strategies: List of available strategies
+        """
+        self.strategies = strategies or [
+            "expected_improvement", "upper_confidence_bound", 
+            "probability_improvement", "entropy_search"
+        ]
+        self.current_strategy = initial_strategy
+        self.adaptation_rate = adaptation_rate
+        
+        # Performance tracking
+        self.strategy_performance = {s: [] for s in self.strategies}
+        self.iteration_count = 0
+        
+        # Acquisition functions
+        self.acquisition_functions = {
+            "expected_improvement": self._expected_improvement,
+            "upper_confidence_bound": self._upper_confidence_bound,
+            "probability_improvement": self._probability_improvement,
+            "entropy_search": self._entropy_search,
+        }
+
         n_epochs = 1000
         convergence_history = []
         
