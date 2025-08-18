@@ -1,21 +1,8 @@
 {
   "errors": [],
-  "generated_at": "2025-08-16T23:55:02Z",
+  "generated_at": "2025-08-18T12:14:58Z",
   "metrics": {
-    "_totals": {
-      "CONFIDENCE.HIGH": 44,
-      "CONFIDENCE.LOW": 0,
-      "CONFIDENCE.MEDIUM": 9,
-      "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 4,
-      "SEVERITY.LOW": 35,
-      "SEVERITY.MEDIUM": 14,
-      "SEVERITY.UNDEFINED": 0,
-      "loc": 30199,
-      "nosec": 0,
-      "skipped_tests": 0
-    },
-    "surrogate_optim/__init__.py": {
+    "./automation/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -24,11 +11,37 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 27,
+      "loc": 0,
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/__version__.py": {
+    "./automation/metrics_dashboard.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 1,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 1,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 362,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./automation/quality_gates.py": {
+      "CONFIDENCE.HIGH": 16,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 16,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 337,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./autonomous_sdlc_summary.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -37,11 +50,11 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 30,
+      "loc": 161,
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/benchmarks.py": {
+    "./examples/autonomous_sdlc_complete_demo.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -50,11 +63,11 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 421,
+      "loc": 353,
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/cli.py": {
+    "./examples/enhanced_integration_example.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -63,50 +76,11 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 286,
+      "loc": 281,
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/core.py": {
-      "CONFIDENCE.HIGH": 0,
-      "CONFIDENCE.LOW": 0,
-      "CONFIDENCE.MEDIUM": 0,
-      "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 0,
-      "SEVERITY.LOW": 0,
-      "SEVERITY.MEDIUM": 0,
-      "SEVERITY.UNDEFINED": 0,
-      "loc": 269,
-      "nosec": 0,
-      "skipped_tests": 0
-    },
-    "surrogate_optim/core/__init__.py": {
-      "CONFIDENCE.HIGH": 0,
-      "CONFIDENCE.LOW": 0,
-      "CONFIDENCE.MEDIUM": 0,
-      "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 0,
-      "SEVERITY.LOW": 0,
-      "SEVERITY.MEDIUM": 0,
-      "SEVERITY.UNDEFINED": 0,
-      "loc": 31,
-      "nosec": 0,
-      "skipped_tests": 0
-    },
-    "surrogate_optim/core/enhanced_optimizer.py": {
-      "CONFIDENCE.HIGH": 0,
-      "CONFIDENCE.LOW": 0,
-      "CONFIDENCE.MEDIUM": 0,
-      "CONFIDENCE.UNDEFINED": 0,
-      "SEVERITY.HIGH": 0,
-      "SEVERITY.LOW": 0,
-      "SEVERITY.MEDIUM": 0,
-      "SEVERITY.UNDEFINED": 0,
-      "loc": 418,
-      "nosec": 0,
-      "skipped_tests": 0
-    },
-    "surrogate_optim/core/error_handling.py": {
+    "./examples/enhanced_research_demo.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -115,11 +89,11 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 393,
+      "loc": 332,
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/core/scalable_optimizer.py": {
+    "./examples/robust_enhanced_demo.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -128,11 +102,167 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 445,
+      "loc": 241,
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/data/__init__.py": {
+    "./examples/scalable_performance_demo.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 268,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./examples/self_healing_demo.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 306,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./examples/simple_enhanced_research_demo.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 338,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./examples/simple_working_example.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 100,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./noxfile.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 54,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./quality_gates_runner.py": {
+      "CONFIDENCE.HIGH": 5,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 5,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 449,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./robust_surrogate.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 440,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./scalable_simple.py": {
+      "CONFIDENCE.HIGH": 2,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 2,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 340,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./scalable_surrogate.py": {
+      "CONFIDENCE.HIGH": 2,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 1,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 566,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./scripts/health-check.py": {
+      "CONFIDENCE.HIGH": 24,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 24,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 423,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./scripts/metrics-collector.py": {
+      "CONFIDENCE.HIGH": 29,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 29,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 327,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./simple_surrogate_test.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 81,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./surrogate_optim/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -145,7 +275,124 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/data/cache.py": {
+    "./surrogate_optim/__version__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 30,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./surrogate_optim/benchmarks.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 421,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./surrogate_optim/cli.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 286,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./surrogate_optim/core.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 269,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./surrogate_optim/core/__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 108,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./surrogate_optim/core/enhanced_optimizer.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 418,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./surrogate_optim/core/error_handling.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 393,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./surrogate_optim/core/scalable_optimizer.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 445,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./surrogate_optim/data/__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 28,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./surrogate_optim/data/cache.py": {
       "CONFIDENCE.HIGH": 5,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -158,7 +405,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/data/collector.py": {
+    "./surrogate_optim/data/collector.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -171,7 +418,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/data/database.py": {
+    "./surrogate_optim/data/database.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -184,7 +431,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/data/persistence.py": {
+    "./surrogate_optim/data/persistence.py": {
       "CONFIDENCE.HIGH": 3,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -197,7 +444,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/data/preprocessing.py": {
+    "./surrogate_optim/data/preprocessing.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -210,7 +457,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/data/samplers.py": {
+    "./surrogate_optim/data/samplers.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -223,7 +470,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/distributed.py": {
+    "./surrogate_optim/distributed.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -236,7 +483,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/distributed/__init__.py": {
+    "./surrogate_optim/distributed/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -249,7 +496,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/distributed/cluster_manager.py": {
+    "./surrogate_optim/distributed/cluster_manager.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -262,7 +509,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/health/__init__.py": {
+    "./surrogate_optim/health/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -275,7 +522,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/health/checks.py": {
+    "./surrogate_optim/health/checks.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -288,7 +535,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/health/endpoints.py": {
+    "./surrogate_optim/health/endpoints.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 2,
@@ -301,7 +548,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/models/__init__.py": {
+    "./surrogate_optim/models/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -314,7 +561,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/models/base.py": {
+    "./surrogate_optim/models/base.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -327,7 +574,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/models/gaussian_process.py": {
+    "./surrogate_optim/models/gaussian_process.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -340,7 +587,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/models/hybrid.py": {
+    "./surrogate_optim/models/hybrid.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -353,7 +600,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/models/neural.py": {
+    "./surrogate_optim/models/neural.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -366,7 +613,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/models/random_forest.py": {
+    "./surrogate_optim/models/random_forest.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -379,7 +626,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/monitoring/__init__.py": {
+    "./surrogate_optim/monitoring/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -392,7 +639,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/monitoring/enhanced_logging.py": {
+    "./surrogate_optim/monitoring/enhanced_logging.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -405,7 +652,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/monitoring/logging.py": {
+    "./surrogate_optim/monitoring/logging.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -418,7 +665,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/monitoring/metrics.py": {
+    "./surrogate_optim/monitoring/metrics.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -431,7 +678,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/observability/__init__.py": {
+    "./surrogate_optim/observability/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -444,7 +691,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/observability/monitoring_dashboard.py": {
+    "./surrogate_optim/observability/monitoring_dashboard.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -457,7 +704,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/observability/prometheus_metrics.py": {
+    "./surrogate_optim/observability/prometheus_metrics.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 1,
@@ -470,7 +717,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/observability/tracing.py": {
+    "./surrogate_optim/observability/tracing.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -483,7 +730,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/optimizers/__init__.py": {
+    "./surrogate_optim/optimizers/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -496,7 +743,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/optimizers/base.py": {
+    "./surrogate_optim/optimizers/base.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -509,7 +756,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/optimizers/gradient_descent.py": {
+    "./surrogate_optim/optimizers/gradient_descent.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -522,7 +769,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/optimizers/multi_start.py": {
+    "./surrogate_optim/optimizers/multi_start.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -535,7 +782,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/optimizers/trust_region.py": {
+    "./surrogate_optim/optimizers/trust_region.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -548,7 +795,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/optimizers/utils.py": {
+    "./surrogate_optim/optimizers/utils.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -561,7 +808,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/performance/__init__.py": {
+    "./surrogate_optim/performance/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -574,7 +821,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/performance/advanced_optimization.py": {
+    "./surrogate_optim/performance/advanced_optimization.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -587,7 +834,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/performance/caching.py": {
+    "./surrogate_optim/performance/caching.py": {
       "CONFIDENCE.HIGH": 5,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -600,7 +847,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/performance/enhanced_performance.py": {
+    "./surrogate_optim/performance/enhanced_performance.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -613,7 +860,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/performance/gpu_acceleration.py": {
+    "./surrogate_optim/performance/gpu_acceleration.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -626,7 +873,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/performance/memory.py": {
+    "./surrogate_optim/performance/memory.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -639,7 +886,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/performance/optimization.py": {
+    "./surrogate_optim/performance/optimization.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -652,7 +899,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/performance/parallel.py": {
+    "./surrogate_optim/performance/parallel.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -665,7 +912,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/performance/profiling.py": {
+    "./surrogate_optim/performance/profiling.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -678,7 +925,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/performance/research_parallel.py": {
+    "./surrogate_optim/performance/research_parallel.py": {
       "CONFIDENCE.HIGH": 3,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -691,7 +938,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/quality/__init__.py": {
+    "./surrogate_optim/quality/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -704,7 +951,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/quality/compliance.py": {
+    "./surrogate_optim/quality/compliance.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -717,7 +964,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/quality/quality_gates.py": {
+    "./surrogate_optim/quality/quality_gates.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -730,7 +977,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/quality/regression_tests.py": {
+    "./surrogate_optim/quality/regression_tests.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -743,7 +990,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/quality/security_checks.py": {
+    "./surrogate_optim/quality/security_checks.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 2,
@@ -756,7 +1003,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/quality/statistical_validation.py": {
+    "./surrogate_optim/quality/statistical_validation.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -769,7 +1016,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/quality_gates.py": {
+    "./surrogate_optim/quality_gates.py": {
       "CONFIDENCE.HIGH": 7,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -782,7 +1029,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/research/__init__.py": {
+    "./surrogate_optim/research/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -795,7 +1042,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/research/enhanced_novel_algorithms.py": {
+    "./surrogate_optim/research/enhanced_novel_algorithms.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -808,7 +1055,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/research/experimental_suite.py": {
+    "./surrogate_optim/research/experimental_suite.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -821,7 +1068,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/research/novel_algorithms.py": {
+    "./surrogate_optim/research/novel_algorithms.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -834,7 +1081,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/research/research_execution_engine.py": {
+    "./surrogate_optim/research/research_execution_engine.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -847,7 +1094,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/research/theoretical_analysis.py": {
+    "./surrogate_optim/research/theoretical_analysis.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -860,7 +1107,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/research/validation_pipeline.py": {
+    "./surrogate_optim/research/validation_pipeline.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -873,7 +1120,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/robustness.py": {
+    "./surrogate_optim/robustness.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -886,7 +1133,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/robustness/error_recovery.py": {
+    "./surrogate_optim/robustness/error_recovery.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -899,7 +1146,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/security.py": {
+    "./surrogate_optim/security.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -912,7 +1159,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/self_healing/__init__.py": {
+    "./surrogate_optim/self_healing/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -925,7 +1172,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/self_healing/compliance_framework.py": {
+    "./surrogate_optim/self_healing/compliance_framework.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -938,7 +1185,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/self_healing/error_handling.py": {
+    "./surrogate_optim/self_healing/error_handling.py": {
       "CONFIDENCE.HIGH": 2,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -951,7 +1198,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/self_healing/global_deployment.py": {
+    "./surrogate_optim/self_healing/global_deployment.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -964,7 +1211,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/self_healing/health_diagnostics.py": {
+    "./surrogate_optim/self_healing/health_diagnostics.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -977,7 +1224,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/self_healing/monitoring_dashboard.py": {
+    "./surrogate_optim/self_healing/monitoring_dashboard.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 1,
@@ -990,7 +1237,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/self_healing/performance_optimization.py": {
+    "./surrogate_optim/self_healing/performance_optimization.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 1,
@@ -1003,7 +1250,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/self_healing/pipeline_monitor.py": {
+    "./surrogate_optim/self_healing/pipeline_monitor.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -1016,7 +1263,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/self_healing/recovery_engine.py": {
+    "./surrogate_optim/self_healing/recovery_engine.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -1029,7 +1276,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/self_healing/robust_monitoring.py": {
+    "./surrogate_optim/self_healing/robust_monitoring.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 1,
@@ -1042,7 +1289,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/self_healing/scalable_architecture.py": {
+    "./surrogate_optim/self_healing/scalable_architecture.py": {
       "CONFIDENCE.HIGH": 2,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -1055,7 +1302,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/self_healing/security_validation.py": {
+    "./surrogate_optim/self_healing/security_validation.py": {
       "CONFIDENCE.HIGH": 3,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -1068,7 +1315,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/self_healing/self_healing_optimizer.py": {
+    "./surrogate_optim/self_healing/self_healing_optimizer.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -1081,7 +1328,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/testing.py": {
+    "./surrogate_optim/testing.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -1094,7 +1341,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/validation/__init__.py": {
+    "./surrogate_optim/validation/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -1107,7 +1354,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/validation/comprehensive_validation.py": {
+    "./surrogate_optim/validation/comprehensive_validation.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 1,
@@ -1120,7 +1367,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/validation/convergence_validation.py": {
+    "./surrogate_optim/validation/convergence_validation.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -1133,7 +1380,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/validation/input_validation.py": {
+    "./surrogate_optim/validation/input_validation.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -1146,7 +1393,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/validation/model_validation.py": {
+    "./surrogate_optim/validation/model_validation.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -1159,7 +1406,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/visualization/__init__.py": {
+    "./surrogate_optim/visualization/__init__.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -1172,7 +1419,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/visualization/basic_plots.py": {
+    "./surrogate_optim/visualization/basic_plots.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -1185,7 +1432,7 @@
       "nosec": 0,
       "skipped_tests": 0
     },
-    "surrogate_optim/visualization/interactive.py": {
+    "./surrogate_optim/visualization/interactive.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
@@ -1197,55 +1444,93 @@
       "loc": 298,
       "nosec": 0,
       "skipped_tests": 0
+    },
+    "./test_basic_functionality.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 58,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./test_quality_gates.py": {
+      "CONFIDENCE.HIGH": 29,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 29,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 266,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "_totals": {
+      "CONFIDENCE.HIGH": 154,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 10,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 5,
+      "SEVERITY.LOW": 144,
+      "SEVERITY.MEDIUM": 15,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 36360,
+      "nosec": 0,
+      "skipped_tests": 0
     }
   },
   "results": [
     {
-      "code": "297                 )\n298         except Exception:\n299             pass  # Skip if condition number computation fails\n300 \n",
-      "col_offset": 8,
-      "end_col_offset": 16,
-      "filename": "surrogate_optim/core/error_handling.py",
-      "issue_confidence": "HIGH",
+      "code": "410         try:\n411             self.app.run(host='0.0.0.0', port=self.port, debug=self.debug)\n412         except KeyboardInterrupt:\n",
+      "col_offset": 30,
+      "end_col_offset": 39,
+      "filename": "./automation/metrics_dashboard.py",
+      "issue_confidence": "MEDIUM",
       "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
+        "id": 605,
+        "link": "https://cwe.mitre.org/data/definitions/605.html"
       },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Pass detected.",
-      "line_number": 298,
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible binding to all interfaces.",
+      "line_number": 411,
       "line_range": [
-        298,
-        299
+        411
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
-      "test_id": "B110",
-      "test_name": "try_except_pass"
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html",
+      "test_id": "B104",
+      "test_name": "hardcoded_bind_all_interfaces"
     },
     {
-      "code": "4 import json\n5 import pickle\n6 import time\n",
-      "col_offset": 0,
-      "end_col_offset": 13,
-      "filename": "surrogate_optim/data/cache.py",
+      "code": "91         \"\"\"Generate cache key from input.\"\"\"\n92         return hashlib.md5(x.tobytes()).hexdigest()\n93     \n",
+      "col_offset": 15,
+      "end_col_offset": 39,
+      "filename": "./scalable_surrogate.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
-        "id": 502,
-        "link": "https://cwe.mitre.org/data/definitions/502.html"
+        "id": 327,
+        "link": "https://cwe.mitre.org/data/definitions/327.html"
       },
-      "issue_severity": "LOW",
-      "issue_text": "Consider possible security implications associated with pickle module.",
-      "line_number": 5,
+      "issue_severity": "HIGH",
+      "issue_text": "Use of weak MD5 hash for security. Consider usedforsecurity=False",
+      "line_number": 92,
       "line_range": [
-        5
+        92
       ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b403-import-pickle",
-      "test_id": "B403",
-      "test_name": "blacklist"
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b324_hashlib.html",
+      "test_id": "B324",
+      "test_name": "hashlib"
     },
     {
       "code": "66         x_bytes = jnp.asarray(x).tobytes()\n67         return hashlib.md5(x_bytes).hexdigest()\n68     \n",
       "col_offset": 15,
       "end_col_offset": 35,
-      "filename": "surrogate_optim/data/cache.py",
+      "filename": "./surrogate_optim/data/cache.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
         "id": 327,
@@ -1265,7 +1550,7 @@
       "code": "143                 with open(cache_file, \"rb\") as f:\n144                     cached_data = pickle.load(f)\n145                 \n",
       "col_offset": 34,
       "end_col_offset": 48,
-      "filename": "surrogate_optim/data/cache.py",
+      "filename": "./surrogate_optim/data/cache.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
         "id": 502,
@@ -1282,74 +1567,10 @@
       "test_name": "blacklist"
     },
     {
-      "code": "151                     return cached_value\n152             except Exception:\n153                 # Ignore corrupted cache files\n154                 pass\n155         \n",
-      "col_offset": 12,
-      "end_col_offset": 20,
-      "filename": "surrogate_optim/data/cache.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Pass detected.",
-      "line_number": 152,
-      "line_range": [
-        152,
-        153,
-        154
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
-      "test_id": "B110",
-      "test_name": "try_except_pass"
-    },
-    {
-      "code": "179                 pickle.dump(cache_data, f)\n180         except Exception:\n181             # Ignore disk write errors\n182             pass\n183     \n",
-      "col_offset": 8,
-      "end_col_offset": 16,
-      "filename": "surrogate_optim/data/cache.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Pass detected.",
-      "line_number": 180,
-      "line_range": [
-        180,
-        181,
-        182
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
-      "test_id": "B110",
-      "test_name": "try_except_pass"
-    },
-    {
-      "code": "3 import json\n4 import pickle\n5 from pathlib import Path\n",
-      "col_offset": 0,
-      "end_col_offset": 13,
-      "filename": "surrogate_optim/data/persistence.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 502,
-        "link": "https://cwe.mitre.org/data/definitions/502.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Consider possible security implications associated with pickle module.",
-      "line_number": 4,
-      "line_range": [
-        4
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b403-import-pickle",
-      "test_id": "B403",
-      "test_name": "blacklist"
-    },
-    {
       "code": "159             with open(filepath, \"rb\") as f:\n160                 return pickle.load(f)\n161         \n",
       "col_offset": 23,
       "end_col_offset": 37,
-      "filename": "surrogate_optim/data/persistence.py",
+      "filename": "./surrogate_optim/data/persistence.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
         "id": 502,
@@ -1369,7 +1590,7 @@
       "code": "309         with open(filepath, \"rb\") as f:\n310             return pickle.load(f)\n311     \n",
       "col_offset": 19,
       "end_col_offset": 33,
-      "filename": "surrogate_optim/data/persistence.py",
+      "filename": "./surrogate_optim/data/persistence.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
         "id": 502,
@@ -1386,30 +1607,10 @@
       "test_name": "blacklist"
     },
     {
-      "code": "4 import json\n5 import pickle\n6 from typing import Any, Dict, List, Optional, Callable, Union\n",
-      "col_offset": 0,
-      "end_col_offset": 13,
-      "filename": "surrogate_optim/distributed.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 502,
-        "link": "https://cwe.mitre.org/data/definitions/502.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Consider possible security implications associated with pickle module.",
-      "line_number": 5,
-      "line_range": [
-        5
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b403-import-pickle",
-      "test_id": "B403",
-      "test_name": "blacklist"
-    },
-    {
       "code": "227     \n228     def __init__(self, host: str = \"0.0.0.0\", port: int = 8080, health_checker: HealthChecker = None):\n229         \"\"\"Initialize health server.\n",
       "col_offset": 35,
       "end_col_offset": 44,
-      "filename": "surrogate_optim/health/endpoints.py",
+      "filename": "./surrogate_optim/health/endpoints.py",
       "issue_confidence": "MEDIUM",
       "issue_cwe": {
         "id": 605,
@@ -1429,7 +1630,7 @@
       "code": "298     parser = argparse.ArgumentParser(description=\"Surrogate Optim Health Server\")\n299     parser.add_argument(\"--host\", default=\"0.0.0.0\", help=\"Host to bind to\")\n300     parser.add_argument(\"--port\", type=int, default=8080, help=\"Port to bind to\")\n",
       "col_offset": 42,
       "end_col_offset": 51,
-      "filename": "surrogate_optim/health/endpoints.py",
+      "filename": "./surrogate_optim/health/endpoints.py",
       "issue_confidence": "MEDIUM",
       "issue_cwe": {
         "id": 605,
@@ -1446,31 +1647,10 @@
       "test_name": "hardcoded_bind_all_interfaces"
     },
     {
-      "code": "216                 metadata.update(model_params)\n217             except:\n218                 pass\n219         \n",
-      "col_offset": 12,
-      "end_col_offset": 20,
-      "filename": "surrogate_optim/monitoring/enhanced_logging.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Pass detected.",
-      "line_number": 217,
-      "line_range": [
-        217,
-        218
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
-      "test_id": "B110",
-      "test_name": "try_except_pass"
-    },
-    {
       "code": "338 \n339 def start_metrics_server(port: int = 8000, addr: str = '0.0.0.0'):\n340     \"\"\"Start Prometheus metrics HTTP server.\"\"\"\n",
       "col_offset": 55,
       "end_col_offset": 64,
-      "filename": "surrogate_optim/observability/prometheus_metrics.py",
+      "filename": "./surrogate_optim/observability/prometheus_metrics.py",
       "issue_confidence": "MEDIUM",
       "issue_cwe": {
         "id": 605,
@@ -1487,50 +1667,10 @@
       "test_name": "hardcoded_bind_all_interfaces"
     },
     {
-      "code": "332         import random\n333         return random.random() < current_rate\n334     \n",
-      "col_offset": 15,
-      "end_col_offset": 30,
-      "filename": "surrogate_optim/observability/tracing.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 330,
-        "link": "https://cwe.mitre.org/data/definitions/330.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Standard pseudo-random generators are not suitable for security/cryptographic purposes.",
-      "line_number": 333,
-      "line_range": [
-        333
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random",
-      "test_id": "B311",
-      "test_name": "blacklist"
-    },
-    {
-      "code": "4 import hashlib\n5 import pickle\n6 import time\n",
-      "col_offset": 0,
-      "end_col_offset": 13,
-      "filename": "surrogate_optim/performance/caching.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 502,
-        "link": "https://cwe.mitre.org/data/definitions/502.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Consider possible security implications associated with pickle module.",
-      "line_number": 5,
-      "line_range": [
-        5
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b403-import-pickle",
-      "test_id": "B403",
-      "test_name": "blacklist"
-    },
-    {
       "code": "110         \"\"\"Get cache file path for key.\"\"\"\n111         safe_key = hashlib.md5(key.encode()).hexdigest()\n112         return self.cache_dir / f\"{safe_key}.cache\"\n",
       "col_offset": 19,
       "end_col_offset": 44,
-      "filename": "surrogate_optim/performance/caching.py",
+      "filename": "./surrogate_optim/performance/caching.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
         "id": 327,
@@ -1550,7 +1690,7 @@
       "code": "139                     data = gzip.decompress(f.read())\n140                     return pickle.loads(data)\n141                 else:\n",
       "col_offset": 27,
       "end_col_offset": 45,
-      "filename": "surrogate_optim/performance/caching.py",
+      "filename": "./surrogate_optim/performance/caching.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
         "id": 502,
@@ -1570,7 +1710,7 @@
       "code": "141                 else:\n142                     return pickle.load(f)\n143         except Exception as e:\n",
       "col_offset": 27,
       "end_col_offset": 41,
-      "filename": "surrogate_optim/performance/caching.py",
+      "filename": "./surrogate_optim/performance/caching.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
         "id": 502,
@@ -1590,7 +1730,7 @@
       "code": "250         key_str = \"_\".join(key_parts)\n251         return hashlib.md5(key_str.encode()).hexdigest()\n252     \n",
       "col_offset": 15,
       "end_col_offset": 44,
-      "filename": "surrogate_optim/performance/caching.py",
+      "filename": "./surrogate_optim/performance/caching.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
         "id": 327,
@@ -1607,135 +1747,10 @@
       "test_name": "hashlib"
     },
     {
-      "code": "71                     self.logger.info(f\"GPU detected, memory fraction set to {self.gpu_memory_fraction}\")\n72             except Exception:\n73                 pass  # No GPU available\n74     \n",
-      "col_offset": 12,
-      "end_col_offset": 20,
-      "filename": "surrogate_optim/performance/enhanced_performance.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Pass detected.",
-      "line_number": 72,
-      "line_range": [
-        72,
-        73
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
-      "test_id": "B110",
-      "test_name": "try_except_pass"
-    },
-    {
-      "code": "152             clear_cache()\n153         except:\n154             pass  # Cache clearing might not be available in all JAX versions\n155 \n",
-      "col_offset": 8,
-      "end_col_offset": 16,
-      "filename": "surrogate_optim/performance/gpu_acceleration.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Pass detected.",
-      "line_number": 153,
-      "line_range": [
-        153,
-        154
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
-      "test_id": "B110",
-      "test_name": "try_except_pass"
-    },
-    {
-      "code": "150             jax.clear_backends()\n151         except:\n152             pass\n153     \n",
-      "col_offset": 8,
-      "end_col_offset": 16,
-      "filename": "surrogate_optim/performance/memory.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Pass detected.",
-      "line_number": 151,
-      "line_range": [
-        151,
-        152
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
-      "test_id": "B110",
-      "test_name": "try_except_pass"
-    },
-    {
-      "code": "624                     \n625             except Exception:\n626                 continue\n627         \n",
-      "col_offset": 12,
-      "end_col_offset": 24,
-      "filename": "surrogate_optim/performance/optimization.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Continue detected.",
-      "line_number": 625,
-      "line_range": [
-        625,
-        626
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b112_try_except_continue.html",
-      "test_id": "B112",
-      "test_name": "try_except_continue"
-    },
-    {
-      "code": "13 from pathlib import Path\n14 import pickle\n15 import hashlib\n",
-      "col_offset": 0,
-      "end_col_offset": 13,
-      "filename": "surrogate_optim/performance/research_parallel.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 502,
-        "link": "https://cwe.mitre.org/data/definitions/502.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Consider possible security implications associated with pickle module.",
-      "line_number": 14,
-      "line_range": [
-        14
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b403-import-pickle",
-      "test_id": "B403",
-      "test_name": "blacklist"
-    },
-    {
-      "code": "100                                   if d.device_kind == 'gpu') / 1024 / 1024\n101             except:\n102                 pass\n103         \n",
-      "col_offset": 12,
-      "end_col_offset": 20,
-      "filename": "surrogate_optim/performance/research_parallel.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Pass detected.",
-      "line_number": 101,
-      "line_range": [
-        101,
-        102
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
-      "test_id": "B110",
-      "test_name": "try_except_pass"
-    },
-    {
       "code": "154             return None\n155         return hashlib.md5(x.tobytes()).hexdigest()[:16]\n156     \n",
       "col_offset": 15,
       "end_col_offset": 39,
-      "filename": "surrogate_optim/performance/research_parallel.py",
+      "filename": "./surrogate_optim/performance/research_parallel.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
         "id": 327,
@@ -1752,30 +1767,10 @@
       "test_name": "hashlib"
     },
     {
-      "code": "4 import inspect\n5 import pickle\n6 import re\n",
-      "col_offset": 0,
-      "end_col_offset": 13,
-      "filename": "surrogate_optim/quality/security_checks.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 502,
-        "link": "https://cwe.mitre.org/data/definitions/502.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Consider possible security implications associated with pickle module.",
-      "line_number": 5,
-      "line_range": [
-        5
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b403-import-pickle",
-      "test_id": "B403",
-      "test_name": "blacklist"
-    },
-    {
       "code": "118                 # Check for world-writable paths\n119                 if source.startswith('/tmp/') or source.startswith('/var/tmp/'):\n120                     source_issues.append({\n",
       "col_offset": 37,
       "end_col_offset": 44,
-      "filename": "surrogate_optim/quality/security_checks.py",
+      "filename": "./surrogate_optim/quality/security_checks.py",
       "issue_confidence": "MEDIUM",
       "issue_cwe": {
         "id": 377,
@@ -1795,7 +1790,7 @@
       "code": "118                 # Check for world-writable paths\n119                 if source.startswith('/tmp/') or source.startswith('/var/tmp/'):\n120                     source_issues.append({\n",
       "col_offset": 67,
       "end_col_offset": 78,
-      "filename": "surrogate_optim/quality/security_checks.py",
+      "filename": "./surrogate_optim/quality/security_checks.py",
       "issue_confidence": "MEDIUM",
       "issue_cwe": {
         "id": 377,
@@ -1812,257 +1807,10 @@
       "test_name": "hardcoded_tmp_directory"
     },
     {
-      "code": "3 import time\n4 import subprocess\n5 from typing import Any, Dict, List, Optional, Tuple, Callable\n",
-      "col_offset": 0,
-      "end_col_offset": 17,
-      "filename": "surrogate_optim/quality_gates.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Consider possible security implications associated with the subprocess module.",
-      "line_number": 4,
-      "line_range": [
-        4
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b404-import-subprocess",
-      "test_id": "B404",
-      "test_name": "blacklist"
-    },
-    {
-      "code": "284             # Check with ruff (if available)\n285             result = subprocess.run(\n286                 [\"python\", \"-m\", \"ruff\", \"check\", \"/root/repo/surrogate_optim\", \"--quiet\"],\n287                 capture_output=True,\n288                 text=True\n289             )\n290             return result.returncode == 0\n",
-      "col_offset": 21,
-      "end_col_offset": 13,
-      "filename": "surrogate_optim/quality_gates.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Starting a process with a partial executable path",
-      "line_number": 285,
-      "line_range": [
-        285,
-        286,
-        287,
-        288,
-        289
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b607_start_process_with_partial_path.html",
-      "test_id": "B607",
-      "test_name": "start_process_with_partial_path"
-    },
-    {
-      "code": "284             # Check with ruff (if available)\n285             result = subprocess.run(\n286                 [\"python\", \"-m\", \"ruff\", \"check\", \"/root/repo/surrogate_optim\", \"--quiet\"],\n287                 capture_output=True,\n288                 text=True\n289             )\n290             return result.returncode == 0\n",
-      "col_offset": 21,
-      "end_col_offset": 13,
-      "filename": "surrogate_optim/quality_gates.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 285,
-      "line_range": [
-        285,
-        286,
-        287,
-        288,
-        289
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html",
-      "test_id": "B603",
-      "test_name": "subprocess_without_shell_equals_true"
-    },
-    {
-      "code": "297         try:\n298             result = subprocess.run(\n299                 [\"python\", \"-m\", \"mypy\", \"/root/repo/surrogate_optim\", \"--ignore-missing-imports\"],\n300                 capture_output=True,\n301                 text=True\n302             )\n303             return result.returncode == 0\n",
-      "col_offset": 21,
-      "end_col_offset": 13,
-      "filename": "surrogate_optim/quality_gates.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Starting a process with a partial executable path",
-      "line_number": 298,
-      "line_range": [
-        298,
-        299,
-        300,
-        301,
-        302
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b607_start_process_with_partial_path.html",
-      "test_id": "B607",
-      "test_name": "start_process_with_partial_path"
-    },
-    {
-      "code": "297         try:\n298             result = subprocess.run(\n299                 [\"python\", \"-m\", \"mypy\", \"/root/repo/surrogate_optim\", \"--ignore-missing-imports\"],\n300                 capture_output=True,\n301                 text=True\n302             )\n303             return result.returncode == 0\n",
-      "col_offset": 21,
-      "end_col_offset": 13,
-      "filename": "surrogate_optim/quality_gates.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 298,
-      "line_range": [
-        298,
-        299,
-        300,
-        301,
-        302
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html",
-      "test_id": "B603",
-      "test_name": "subprocess_without_shell_equals_true"
-    },
-    {
-      "code": "309         try:\n310             result = subprocess.run(\n311                 [\"python\", \"-m\", \"bandit\", \"-r\", \"/root/repo/surrogate_optim\", \"-q\"],\n312                 capture_output=True,\n313                 text=True\n314             )\n315             return result.returncode == 0\n",
-      "col_offset": 21,
-      "end_col_offset": 13,
-      "filename": "surrogate_optim/quality_gates.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Starting a process with a partial executable path",
-      "line_number": 310,
-      "line_range": [
-        310,
-        311,
-        312,
-        313,
-        314
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b607_start_process_with_partial_path.html",
-      "test_id": "B607",
-      "test_name": "start_process_with_partial_path"
-    },
-    {
-      "code": "309         try:\n310             result = subprocess.run(\n311                 [\"python\", \"-m\", \"bandit\", \"-r\", \"/root/repo/surrogate_optim\", \"-q\"],\n312                 capture_output=True,\n313                 text=True\n314             )\n315             return result.returncode == 0\n",
-      "col_offset": 21,
-      "end_col_offset": 13,
-      "filename": "surrogate_optim/quality_gates.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 78,
-        "link": "https://cwe.mitre.org/data/definitions/78.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "subprocess call - check for execution of untrusted input.",
-      "line_number": 310,
-      "line_range": [
-        310,
-        311,
-        312,
-        313,
-        314
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html",
-      "test_id": "B603",
-      "test_name": "subprocess_without_shell_equals_true"
-    },
-    {
-      "code": "763                         \n764                 except Exception:\n765                     continue\n766         \n",
-      "col_offset": 16,
-      "end_col_offset": 28,
-      "filename": "surrogate_optim/research/novel_algorithms.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Continue detected.",
-      "line_number": 764,
-      "line_range": [
-        764,
-        765
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b112_try_except_continue.html",
-      "test_id": "B112",
-      "test_name": "try_except_continue"
-    },
-    {
-      "code": "170                 bootstrap_rates.append(bootstrap_rate)\n171             except:\n172                 continue\n173         \n",
-      "col_offset": 12,
-      "end_col_offset": 24,
-      "filename": "surrogate_optim/research/theoretical_analysis.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Continue detected.",
-      "line_number": 171,
-      "line_range": [
-        171,
-        172
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b112_try_except_continue.html",
-      "test_id": "B112",
-      "test_name": "try_except_continue"
-    },
-    {
-      "code": "315             import random\n316             jitter_factor = random.uniform(0.8, 1.2)\n317             delay *= jitter_factor\n",
-      "col_offset": 28,
-      "end_col_offset": 52,
-      "filename": "surrogate_optim/self_healing/error_handling.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 330,
-        "link": "https://cwe.mitre.org/data/definitions/330.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Standard pseudo-random generators are not suitable for security/cryptographic purposes.",
-      "line_number": 316,
-      "line_range": [
-        316
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random",
-      "test_id": "B311",
-      "test_name": "blacklist"
-    },
-    {
-      "code": "399                 state[\"jax_backend\"] = jax.lib.xla_bridge.get_backend().platform\n400             except Exception:\n401                 pass\n402                 \n",
-      "col_offset": 12,
-      "end_col_offset": 20,
-      "filename": "surrogate_optim/self_healing/error_handling.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Pass detected.",
-      "line_number": 400,
-      "line_range": [
-        400,
-        401
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
-      "test_id": "B110",
-      "test_name": "try_except_pass"
-    },
-    {
       "code": "370         try:\n371             uvicorn.run(self.app, host=\"0.0.0.0\", port=self.port, log_level=\"warning\")\n372         except Exception as e:\n",
       "col_offset": 39,
       "end_col_offset": 48,
-      "filename": "surrogate_optim/self_healing/monitoring_dashboard.py",
+      "filename": "./surrogate_optim/self_healing/monitoring_dashboard.py",
       "issue_confidence": "MEDIUM",
       "issue_cwe": {
         "id": 605,
@@ -2079,31 +1827,10 @@
       "test_name": "hardcoded_bind_all_interfaces"
     },
     {
-      "code": "385                 asyncio.create_task(websocket.close())\n386             except Exception:\n387                 pass\n388                 \n",
-      "col_offset": 12,
-      "end_col_offset": 20,
-      "filename": "surrogate_optim/self_healing/monitoring_dashboard.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Pass detected.",
-      "line_number": 386,
-      "line_range": [
-        386,
-        387
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
-      "test_id": "B110",
-      "test_name": "try_except_pass"
-    },
-    {
       "code": "190         # Configure compilation cache\n191         jax.config.update(\"jax_compilation_cache_dir\", \"/tmp/jax_cache\")\n192         \n",
       "col_offset": 55,
       "end_col_offset": 71,
-      "filename": "surrogate_optim/self_healing/performance_optimization.py",
+      "filename": "./surrogate_optim/self_healing/performance_optimization.py",
       "issue_confidence": "MEDIUM",
       "issue_cwe": {
         "id": 377,
@@ -2120,31 +1847,10 @@
       "test_name": "hardcoded_tmp_directory"
     },
     {
-      "code": "221             context[\"jax_memory\"] = jax.lib.xla_bridge.get_backend().get_memory_info(jax.devices()[0]) if jax.devices() else None\n222         except Exception:\n223             pass\n224             \n",
-      "col_offset": 8,
-      "end_col_offset": 16,
-      "filename": "surrogate_optim/self_healing/robust_monitoring.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Pass detected.",
-      "line_number": 222,
-      "line_range": [
-        222,
-        223
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
-      "test_id": "B110",
-      "test_name": "try_except_pass"
-    },
-    {
       "code": "506             # Save to emergency file\n507             emergency_file = f\"/tmp/emergency_state_{int(time.time())}.json\"\n508             import json\n",
       "col_offset": 31,
       "end_col_offset": 52,
-      "filename": "surrogate_optim/self_healing/robust_monitoring.py",
+      "filename": "./surrogate_optim/self_healing/robust_monitoring.py",
       "issue_confidence": "MEDIUM",
       "issue_cwe": {
         "id": 377,
@@ -2161,91 +1867,10 @@
       "test_name": "hardcoded_tmp_directory"
     },
     {
-      "code": "11 import concurrent.futures\n12 import pickle\n13 import json\n",
-      "col_offset": 0,
-      "end_col_offset": 13,
-      "filename": "surrogate_optim/self_healing/scalable_architecture.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 502,
-        "link": "https://cwe.mitre.org/data/definitions/502.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Consider possible security implications associated with pickle module.",
-      "line_number": 12,
-      "line_range": [
-        12
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b403-import-pickle",
-      "test_id": "B403",
-      "test_name": "blacklist"
-    },
-    {
-      "code": "406             self._metrics.cpu_utilization = psutil.cpu_percent()\n407         except Exception:\n408             pass\n409             \n",
-      "col_offset": 8,
-      "end_col_offset": 16,
-      "filename": "surrogate_optim/self_healing/scalable_architecture.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Pass detected.",
-      "line_number": 407,
-      "line_range": [
-        407,
-        408
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
-      "test_id": "B110",
-      "test_name": "try_except_pass"
-    },
-    {
-      "code": "461         \"\"\"Securely serialize object.\"\"\"\n462         import pickle\n463         \n",
-      "col_offset": 8,
-      "end_col_offset": 21,
-      "filename": "surrogate_optim/self_healing/security_validation.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 502,
-        "link": "https://cwe.mitre.org/data/definitions/502.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Consider possible security implications associated with pickle module.",
-      "line_number": 462,
-      "line_range": [
-        462
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b403-import-pickle",
-      "test_id": "B403",
-      "test_name": "blacklist"
-    },
-    {
-      "code": "479         \"\"\"Securely deserialize object.\"\"\"\n480         import pickle\n481         \n",
-      "col_offset": 8,
-      "end_col_offset": 21,
-      "filename": "surrogate_optim/self_healing/security_validation.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 502,
-        "link": "https://cwe.mitre.org/data/definitions/502.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Consider possible security implications associated with pickle module.",
-      "line_number": 480,
-      "line_range": [
-        480
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b403-import-pickle",
-      "test_id": "B403",
-      "test_name": "blacklist"
-    },
-    {
       "code": "487         try:\n488             obj = pickle.loads(data)\n489             \n",
       "col_offset": 18,
       "end_col_offset": 36,
-      "filename": "surrogate_optim/self_healing/security_validation.py",
+      "filename": "./surrogate_optim/self_healing/security_validation.py",
       "issue_confidence": "HIGH",
       "issue_cwe": {
         "id": 502,
@@ -2260,48 +1885,6 @@
       "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b301-pickle",
       "test_id": "B301",
       "test_name": "blacklist"
-    },
-    {
-      "code": "31     \"\"\"Validation outcome.\"\"\"\n32     PASS = \"pass\"\n33     WARNING = \"warning\"\n",
-      "col_offset": 11,
-      "end_col_offset": 17,
-      "filename": "surrogate_optim/validation/comprehensive_validation.py",
-      "issue_confidence": "MEDIUM",
-      "issue_cwe": {
-        "id": 259,
-        "link": "https://cwe.mitre.org/data/definitions/259.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Possible hardcoded password: 'pass'",
-      "line_number": 32,
-      "line_range": [
-        32
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b105_hardcoded_password_string.html",
-      "test_id": "B105",
-      "test_name": "hardcoded_password_string"
-    },
-    {
-      "code": "348                 \n349             except Exception:\n350                 # Skip failed evaluations\n351                 continue\n352         \n",
-      "col_offset": 12,
-      "end_col_offset": 24,
-      "filename": "surrogate_optim/validation/model_validation.py",
-      "issue_confidence": "HIGH",
-      "issue_cwe": {
-        "id": 703,
-        "link": "https://cwe.mitre.org/data/definitions/703.html"
-      },
-      "issue_severity": "LOW",
-      "issue_text": "Try, Except, Continue detected.",
-      "line_number": 349,
-      "line_range": [
-        349,
-        350,
-        351
-      ],
-      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b112_try_except_continue.html",
-      "test_id": "B112",
-      "test_name": "try_except_continue"
     }
   ]
 }
