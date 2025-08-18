@@ -16,7 +16,7 @@ from .optimizers import *
 from .data import *
 
 # Main interface classes  
-# from .core import SurrogateOptimizer  # Temporarily disabled due to circular import
+from .core import SurrogateOptimizer
 
 __all__ = [
     "__version__",
