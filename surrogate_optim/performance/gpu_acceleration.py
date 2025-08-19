@@ -654,3 +654,29 @@ def enable_gpu_optimizations(
         print("No GPU detected - falling back to CPU optimization")
     
     return gpu_surrogate
+
+
+class GPUAccelerator:
+    """High-level GPU acceleration interface for surrogate optimization."""
+    
+    def __init__(self):
+        """Initialize GPU accelerator."""
+        self.gpu_manager = GPUManager()
+        self.status = self.gpu_manager.get_status()
+        
+    def get_training_params(self) -> Dict[str, Any]:
+        """Get optimized training parameters for current hardware."""
+        if self.status.has_gpu:
+            return {
+                "batch_size": self.gpu_manager.get_optimal_batch_size(2, "medium"),
+                "n_epochs": 200  # Fewer epochs for faster training
+            }
+        else:
+            return {
+                "batch_size": 32,
+                "n_epochs": 200  # Standard training
+            }
+    
+    def is_available(self) -> bool:
+        """Check if GPU acceleration is available."""
+        return self.status.has_gpu

@@ -497,3 +497,34 @@ def setup_logging(
             structured_output=structured,
             include_performance_metrics=performance_metrics,
         )
+
+
+def setup_enhanced_logging(
+    name: str,
+    log_file: Optional[Union[str, Path]] = None,
+    level: Union[str, int] = logging.INFO,
+    structured: bool = True,
+    include_performance: bool = True,
+) -> StructuredLogger:
+    """Setup enhanced logging for surrogate optimization.
+    
+    Args:
+        name: Logger name
+        log_file: Optional log file path
+        level: Logging level
+        structured: Whether to use structured JSON output
+        include_performance: Whether to include performance metrics
+        
+    Returns:
+        Configured StructuredLogger instance
+    """
+    if isinstance(level, str):
+        level = getattr(logging, level.upper())
+    
+    return StructuredLogger(
+        name=name,
+        log_file=log_file,
+        log_level=logging.getLevelName(level),
+        structured_output=structured,
+        include_performance_metrics=include_performance
+    )

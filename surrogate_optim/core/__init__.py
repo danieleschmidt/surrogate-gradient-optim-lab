@@ -95,6 +95,27 @@ try:
                 bounds=bounds
             )
             return result.x if hasattr(result, 'x') else result
+        
+        def predict(self, x: Array) -> Array:
+            """Predict function values using the trained surrogate."""
+            if not self.is_fitted:
+                raise ValueError("Surrogate must be trained before prediction")
+            return self.surrogate.predict(x)
+        
+        def get_training_info(self) -> Dict[str, Any]:
+            """Get information about the training process."""
+            if not self.is_fitted:
+                return {"is_fitted": False}
+            
+            info = {
+                "is_fitted": True,
+                "surrogate_type": self.surrogate_type,
+                "optimizer_type": self.optimizer_type,
+                "n_training_samples": self.training_data.n_samples if self.training_data else 0,
+                "input_dimension": self.training_data.n_dims if self.training_data else 0,
+                "has_gradients": self.training_data.gradients is not None if self.training_data else False,
+            }
+            return info
 
 except ImportError as e:
     print(f"Warning: Could not import SurrogateOptimizer dependencies: {e}")
