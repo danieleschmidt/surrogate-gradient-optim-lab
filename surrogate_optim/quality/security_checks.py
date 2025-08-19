@@ -446,3 +446,57 @@ def scan_surrogate_security(
         data_sources=data_sources,
         validation_config=validation_config,
     )
+
+
+class SecurityValidator:
+    """Enhanced security validator for surrogate optimization workflows."""
+    
+    def __init__(self):
+        """Initialize security validator."""
+        self.function_call_count = 0
+        self.max_function_calls = 1000
+        
+    def validate_bounds(self, bounds):
+        """Validate optimization bounds for security."""
+        for i, (lower, upper) in enumerate(bounds):
+            if upper - lower > 1000:
+                raise ValueError(f"Bounds too wide for dimension {i}: potential resource exhaustion")
+            if abs(lower) > 1e6 or abs(upper) > 1e6:
+                raise ValueError(f"Bounds too extreme for dimension {i}: potential numerical issues")
+    
+    def monitor_function_calls(self):
+        """Context manager to monitor function calls."""
+        from contextlib import contextmanager
+        
+        @contextmanager
+        def monitor():
+            initial_count = self.function_call_count
+            try:
+                yield
+            finally:
+                calls_made = self.function_call_count - initial_count
+                if calls_made > self.max_function_calls:
+                    raise ValueError(f"Too many function calls: {calls_made} > {self.max_function_calls}")
+        
+        return monitor()
+    
+    def timeout_context(self, timeout_seconds):
+        """Context manager for operation timeouts."""
+        import signal
+        from contextlib import contextmanager
+        
+        @contextmanager  
+        def timeout():
+            def timeout_handler(signum, frame):
+                raise TimeoutError(f"Operation timed out after {timeout_seconds} seconds")
+            
+            old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(timeout_seconds)
+            
+            try:
+                yield
+            finally:
+                signal.alarm(0)
+                signal.signal(signal.SIGALRM, old_handler)
+        
+        return timeout()

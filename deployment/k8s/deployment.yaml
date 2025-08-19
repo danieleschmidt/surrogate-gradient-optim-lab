@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: surrogate-optimizer
+  labels:
+    app: surrogate-optimizer
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: surrogate-optimizer
+  template:
+    metadata:
+      labels:
+        app: surrogate-optimizer
+    spec:
+      containers:
+      - name: surrogate-optimizer
+        image: surrogate-optimizer:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PYTHONPATH
+          value: "/app"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: WORKERS
+          value: "4"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      nodeSelector:
+        kubernetes.io/os: linux

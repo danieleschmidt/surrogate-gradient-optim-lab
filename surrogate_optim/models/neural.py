@@ -125,19 +125,25 @@ class NeuralSurrogate(Surrogate):
     def fit(self, dataset: Dataset) -> "NeuralSurrogate":
         """Train the neural network surrogate."""
         self.input_dim = dataset.n_dims
-        key = random.PRNGKey(self.random_seed)
+        
+        # Create proper JAX PRNG key
+        if isinstance(self.random_seed, int):
+            key = random.PRNGKey(self.random_seed)
+        else:
+            key = self.random_seed
         
         # Initialize parameters
         self.params = self._init_network(key, self.input_dim)
         
         # Create optimizer state (simple momentum)
-        optimizer_state = {key: jnp.zeros_like(param) for key, param in self.params.items()}
+        optimizer_state = {param_key: jnp.zeros_like(param) for param_key, param in self.params.items()}
         momentum = 0.9
         
         # Training loop
         n_batches = max(1, dataset.n_samples // self.batch_size)
         
         for epoch in range(self.n_epochs):
+            # Split key properly
             key, subkey = random.split(key)
             
             # Shuffle data
@@ -159,9 +165,9 @@ class NeuralSurrogate(Surrogate):
                 epoch_loss += loss_value
                 
                 # Update parameters with momentum
-                for key in self.params:
-                    optimizer_state[key] = momentum * optimizer_state[key] - self.learning_rate * grads[key]
-                    self.params[key] += optimizer_state[key]
+                for param_key in self.params:
+                    optimizer_state[param_key] = momentum * optimizer_state[param_key] - self.learning_rate * grads[param_key]
+                    self.params[param_key] += optimizer_state[param_key]
             
             # Print progress occasionally
             if epoch % (self.n_epochs // 10) == 0 or epoch == self.n_epochs - 1:

@@ -530,3 +530,43 @@ class CachedSurrogate:
     def __getattr__(self, name):
         """Delegate other attributes to underlying surrogate."""
         return getattr(self.surrogate, name)
+
+
+class OptimizationCache:
+    """High-performance cache for optimization results."""
+    
+    def __init__(self, max_size: int = 10000, ttl: int = 3600):
+        """Initialize optimization cache.
+        
+        Args:
+            max_size: Maximum number of cached items
+            ttl: Time to live in seconds
+        """
+        self.cache = LRUCache(maxsize=max_size)
+        self.ttl = ttl
+        self._timestamps = {}
+    
+    def get(self, key: str) -> Any:
+        """Get cached value."""
+        if key in self._timestamps:
+            if time.time() - self._timestamps[key] > self.ttl:
+                # Expired
+                self.cache.remove(key)
+                del self._timestamps[key]
+                return None
+        
+        return self.cache.get(key)
+    
+    def set(self, key: str, value: Any):
+        """Set cached value."""
+        self.cache.put(key, value)
+        self._timestamps[key] = time.time()
+    
+    def get_stats(self) -> Dict[str, Any]:
+        """Get cache statistics."""
+        return {
+            "size": len(self.cache.cache),
+            "hit_rate": self.cache.hits / (self.cache.hits + self.cache.misses) if (self.cache.hits + self.cache.misses) > 0 else 0,
+            "hits": self.cache.hits,
+            "misses": self.cache.misses
+        }

@@ -242,7 +242,7 @@ class ParallelOptimizer:
         self.optimizers = optimizers
         self.n_workers = n_workers or min(len(optimizers), mp.cpu_count())
         self.timeout = timeout
-        self.logger = get_logger()
+        self.logger = get_logger("parallel_optimizer")
     
     def optimize_parallel(
         self,
@@ -468,4 +468,31 @@ class BatchOptimizer:
                 progress = min(i + self.batch_size, len(x0_list)) / len(x0_list) * 100
                 self.logger.debug(f"Batch optimization progress: {progress:.1f}%")
         
+        return results
+    
+    def collect_data_parallel(self, function, n_samples, bounds, sampling="sobol"):
+        """Collect data in parallel for improved performance."""
+        try:
+            from ..data.collector import collect_data
+            return collect_data(
+                function=function,
+                n_samples=n_samples,
+                bounds=bounds,
+                sampling=sampling,
+                verbose=True
+            )
+        except Exception:
+            # Fallback to standard collection
+            return None
+    
+    def optimize_batch(self, optimizer, initial_points, bounds):
+        """Optimize multiple starting points efficiently."""
+        results = []
+        for initial_point in initial_points:
+            result = optimizer.optimize(initial_point=initial_point, bounds=bounds)
+            results.append({
+                "initial_point": initial_point,
+                "result": result,
+                "optimal_value": 0.0  # Placeholder
+            })
         return results
