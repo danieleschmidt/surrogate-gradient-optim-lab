@@ -1,0 +1,57 @@
+{
+  "overall_status": "NEEDS_IMPROVEMENT",
+  "overall_pass_rate": 0.4375,
+  "categories": {
+    "security": {
+      "passed": 1,
+      "total": 3,
+      "pass_rate": 0.3333333333333333,
+      "status": "NEEDS_WORK"
+    },
+    "performance": {
+      "passed": 1,
+      "total": 7,
+      "pass_rate": 0.14285714285714285,
+      "status": "NEEDS_WORK"
+    },
+    "functionality": {
+      "passed": 2,
+      "total": 3,
+      "pass_rate": 0.6666666666666666,
+      "status": "NEEDS_WORK"
+    },
+    "code_quality": {
+      "passed": 3,
+      "total": 3,
+      "pass_rate": 1.0,
+      "status": "PASS"
+    }
+  },
+  "detailed_results": {
+    "security": {
+      "unsafe_imports": false,
+      "hardcoded_secrets": false,
+      "input_validation": true
+    },
+    "performance": {
+      "data_throughput": 412.2157990844244,
+      "train_throughput": 149.91918390397862,
+      "prediction_throughput": 814.5529120000932,
+      "data_time": 0.24259138107299805,
+      "train_time": 0.6670260429382324,
+      "prediction_time": 0.368300199508667,
+      "performance_acceptable": true
+    },
+    "functionality": {
+      "imports": true,
+      "jax_operations": true,
+      "optimization": false
+    },
+    "code_quality": {
+      "required_files": true,
+      "documentation": true,
+      "error_handling": true
+    }
+  },
+  "timestamp": 1755718184.9349275
+}
