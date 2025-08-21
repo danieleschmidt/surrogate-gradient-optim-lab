@@ -113,7 +113,8 @@ class SurrogateOptimizer:
         initial_point: Array,
         bounds: Optional[List[Tuple[float, float]]] = None,
         method: str = "L-BFGS-B",
-        num_steps: int = 100,
+        max_iterations: Optional[int] = None,
+        num_steps: Optional[int] = None,
         **kwargs
     ) -> OptimizationResult:
         """Optimize using the trained surrogate.
@@ -134,8 +135,9 @@ class SurrogateOptimizer:
         print(f"Starting optimization from point {initial_point}")
         
         # Update optimizer parameters if provided
-        if num_steps != 100:
-            self.optimizer.max_iterations = num_steps
+        iterations = max_iterations or num_steps or 100
+        if hasattr(self.optimizer, 'max_iterations'):
+            self.optimizer.max_iterations = iterations
         
         # Run optimization
         result = self.optimizer.optimize(
