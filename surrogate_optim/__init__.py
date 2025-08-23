@@ -16,7 +16,7 @@ from .optimizers import *
 from .data import *
 
 # Main interface classes  
-from .core import SurrogateOptimizer as CoreSurrogateOptimizer
+from .core import SurrogateOptimizer as CoreSurrogateOptimizer, quick_optimize
 # Import the full version from core.py which has all methods
 SurrogateOptimizer = CoreSurrogateOptimizer
 
@@ -25,6 +25,7 @@ __all__ = [
     "VERSION",
     # Core classes
     "SurrogateOptimizer",
+    "quick_optimize",
     "EnhancedSurrogateOptimizer",
     # Models
     "Surrogate",

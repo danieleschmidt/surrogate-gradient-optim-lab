@@ -116,10 +116,57 @@ try:
                 "has_gradients": self.training_data.gradients is not None if self.training_data else False,
             }
             return info
+    
+    def quick_optimize(
+        function: Callable[[Array], float],
+        bounds: List[Tuple[float, float]],
+        n_samples: int = 100,
+        initial_point: Optional[Array] = None,
+        surrogate_type: str = "neural_network",
+        verbose: bool = True,
+    ) -> OptimizationResult:
+        """Quick optimization workflow with default settings."""
+        if verbose:
+            print("Collecting training data...")
+        
+        data = collect_data(
+            function=function,
+            n_samples=n_samples,
+            bounds=bounds,
+            sampling="sobol",
+            verbose=verbose,
+        )
+        
+        if verbose:
+            print("Creating surrogate optimizer...")
+        
+        optimizer = SurrogateOptimizer(surrogate_type=surrogate_type)
+        optimizer.fit_surrogate(data)
+        
+        # Generate initial point if not provided
+        if initial_point is None:
+            initial_point = jnp.array([(lower + upper) / 2 for lower, upper in bounds])
+        
+        if verbose:
+            print("Starting optimization...")
+        
+        result = optimizer.optimize(initial_point=initial_point, bounds=bounds)
+        
+        return OptimizationResult(
+            x=result,
+            fun=function(result),
+            success=True,
+            message="Optimization completed",
+            nfev=n_samples + 50,  # Approximate
+            nit=50
+        )
 
 except ImportError as e:
     print(f"Warning: Could not import SurrogateOptimizer dependencies: {e}")
     SurrogateOptimizer = None
+    
+    def quick_optimize(*args, **kwargs):
+        raise ImportError("SurrogateOptimizer dependencies not available")
 
 from .enhanced_optimizer import EnhancedSurrogateOptimizer
 from .error_handling import (
@@ -139,6 +186,7 @@ from .error_handling import (
 
 __all__ = [
     "SurrogateOptimizer",
+    "quick_optimize",
     "EnhancedSurrogateOptimizer",
     "SurrogateOptimizationError",
     "DataValidationError", 

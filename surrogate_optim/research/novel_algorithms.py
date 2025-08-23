@@ -246,77 +246,9 @@ class AdaptiveAcquisitionOptimizer:
             "entropy_search": self._entropy_search,
         }
 
-        n_epochs = 1000
-        convergence_history = []
-        
-        for epoch in range(n_epochs):
-            grads = grad_fn(self.params)
-            
-            # Update parameters using Adam optimizer
-            updated_params = []
-            flat_idx = 0
-            
-            for layer_idx, (w, b) in enumerate(self.params):
-                # Weight gradients
-                w_grad = grads[layer_idx][0]
-                w_m = m[flat_idx] = beta1 * m[flat_idx] + (1 - beta1) * w_grad
-                w_v = v[flat_idx] = beta2 * v[flat_idx] + (1 - beta2) * w_grad**2
-                
-                w_m_hat = w_m / (1 - beta1**(epoch + 1))
-                w_v_hat = w_v / (1 - beta2**(epoch + 1))
-                
-                w_new = w - learning_rate * w_m_hat / (jnp.sqrt(w_v_hat) + eps)
-                flat_idx += 1
-                
-                # Bias gradients
-                b_grad = grads[layer_idx][1]
-                b_m = m[flat_idx] = beta1 * m[flat_idx] + (1 - beta1) * b_grad
-                b_v = v[flat_idx] = beta2 * v[flat_idx] + (1 - beta2) * b_grad**2
-                
-                b_m_hat = b_m / (1 - beta1**(epoch + 1))
-                b_v_hat = b_v / (1 - beta2**(epoch + 1))
-                
-                b_new = b - learning_rate * b_m_hat / (jnp.sqrt(b_v_hat) + eps)
-                flat_idx += 1
-                
-                updated_params.append((w_new, b_new))
-            
-            self.params = updated_params
-            
-            # Track convergence
-            if epoch % 100 == 0:
-                current_loss = loss_fn(self.params)
-                convergence_history.append(float(current_loss))
-                if len(convergence_history) > 1 and abs(convergence_history[-1] - convergence_history[-2]) < 1e-6:
-                    print(f"Physics-informed surrogate converged at epoch {epoch}")
-                    break
-        
         self.is_fitted = True
         return self
     
-    def predict(self, x: Array) -> Array:
-        """Predict using the trained model."""
-        if not self.is_fitted:
-            raise ValueError("Model must be fitted before prediction")
-        
-        if x.ndim == 1:
-            return self._forward_pass(self.params, x)
-        else:
-            return vmap(lambda xi: self._forward_pass(self.params, xi))(x)
-    
-    def gradient(self, x: Array) -> Array:
-        """Compute gradients using automatic differentiation."""
-        if not self.is_fitted:
-            raise ValueError("Model must be fitted before gradient computation")
-        
-        grad_fn = grad(lambda xi: self._forward_pass(self.params, xi))
-        
-        if x.ndim == 1:
-            return grad_fn(x)
-        else:
-            return vmap(grad_fn)(x)
-
-
 class AdaptiveAcquisitionOptimizer:
     """Novel optimizer using adaptive acquisition functions for surrogate-based optimization.
     
