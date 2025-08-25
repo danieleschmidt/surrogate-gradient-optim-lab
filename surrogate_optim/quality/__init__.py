@@ -1,9 +1,9 @@
 """Quality assurance and testing utilities."""
 
+from .compliance import *
 from .quality_gates import *
 from .regression_tests import *
 from .security_checks import *
-from .compliance import *
 from .statistical_validation import *
 
 __all__ = [

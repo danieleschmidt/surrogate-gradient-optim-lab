@@ -1,35 +1,32 @@
 """Research module for novel algorithms and experimental features."""
 
-from .novel_algorithms import (
-    PhysicsInformedSurrogate,
-    AdaptiveAcquisitionOptimizer,
-    MultiObjectiveSurrogateOptimizer,
-    SequentialModelBasedOptimization,
-    ResearchResult,
-)
-
-from .theoretical_analysis import (
-    ConvergenceAnalyzer,
-    SampleComplexityAnalyzer,
-    GradientErrorAnalyzer,
-    TheoreticalBounds,
-)
-
 from .experimental_suite import (
-    ResearchExperimentSuite,
-    ComparisonStudy,
     AblationStudy,
+    ComparisonStudy,
+    ResearchExperimentSuite,
     run_research_experiments,
 )
-
+from .novel_algorithms import (
+    AdaptiveAcquisitionOptimizer,
+    MultiObjectiveSurrogateOptimizer,
+    PhysicsInformedSurrogate,
+    ResearchResult,
+    SequentialModelBasedOptimization,
+)
+from .theoretical_analysis import (
+    ConvergenceAnalyzer,
+    GradientErrorAnalyzer,
+    SampleComplexityAnalyzer,
+    TheoreticalBounds,
+)
 from .validation_pipeline import (
-    ValidationStatus,
+    ComparativeAnalysis,
     ResearchDomain,
+    ResearchValidationPipeline,
+    StatisticalAnalysis,
     ValidationConfig,
     ValidationResult,
-    StatisticalAnalysis,
-    ComparativeAnalysis,
-    ResearchValidationPipeline,
+    ValidationStatus,
     run_algorithm_validation,
     run_comparative_study,
 )
@@ -37,26 +34,26 @@ from .validation_pipeline import (
 __all__ = [
     # Novel algorithms
     "PhysicsInformedSurrogate",
-    "AdaptiveAcquisitionOptimizer", 
+    "AdaptiveAcquisitionOptimizer",
     "MultiObjectiveSurrogateOptimizer",
     "SequentialModelBasedOptimization",
     "ResearchResult",
-    
+
     # Theoretical analysis
     "ConvergenceAnalyzer",
     "SampleComplexityAnalyzer",
-    "GradientErrorAnalyzer", 
+    "GradientErrorAnalyzer",
     "TheoreticalBounds",
-    
+
     # Experimental framework
     "ResearchExperimentSuite",
     "ComparisonStudy",
     "AblationStudy",
     "run_research_experiments",
-    
+
     # Validation pipeline
     "ValidationStatus",
-    "ResearchDomain", 
+    "ResearchDomain",
     "ValidationConfig",
     "ValidationResult",
     "StatisticalAnalysis",

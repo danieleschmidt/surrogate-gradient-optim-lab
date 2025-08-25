@@ -1,6 +1,6 @@
 """Monitoring and observability for Surrogate Gradient Optimization Lab."""
 
-from .metrics import MetricsCollector, Timer, Counter, Gauge
-from .logging import setup_logging, get_logger
+from .logging import get_logger, setup_logging
+from .metrics import Counter, Gauge, MetricsCollector, Timer
 
-__all__ = ["MetricsCollector", "Timer", "Counter", "Gauge", "setup_logging", "get_logger"]
+__all__ = ["Counter", "Gauge", "MetricsCollector", "Timer", "get_logger", "setup_logging"]

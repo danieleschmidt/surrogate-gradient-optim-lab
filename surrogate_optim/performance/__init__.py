@@ -1,14 +1,14 @@
 """Performance optimization utilities."""
 
 from .caching import *
-from .parallel import *
-from .memory import *
-from .profiling import *
 from .gpu_acceleration import *
+from .memory import *
+from .parallel import *
+from .profiling import *
 
 __all__ = [
     "LRUCache",
-    "PersistentCache", 
+    "PersistentCache",
     "FunctionCache",
     "ParallelDataCollector",
     "ParallelOptimizer",

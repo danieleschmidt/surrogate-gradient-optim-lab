@@ -2,12 +2,11 @@
 
 import logging
 import logging.config
-import sys
 import os
-import time
-from typing import Dict, Any, Optional
 from pathlib import Path
-import json
+import sys
+import time
+from typing import Any, Dict, Optional
 
 from loguru import logger as loguru_logger
 
@@ -31,37 +30,35 @@ def setup_logging(
     Returns:
         logging.Logger: Configured logger instance
     """
-    
     # Clear any existing handlers
     root_logger = logging.getLogger()
     for handler in root_logger.handlers[:]:
         root_logger.removeHandler(handler)
-    
+
     # Configure logging level
     numeric_level = getattr(logging, level.upper(), logging.INFO)
-    
+
     if json_logs:
         # Use structured JSON logging
         config = _get_json_logging_config(numeric_level, log_file)
     else:
         # Use standard text logging
         config = _get_standard_logging_config(numeric_level, format_type, log_file)
-    
+
     logging.config.dictConfig(config)
-    
+
     # Configure loguru for enhanced logging features
     _setup_loguru(level, log_file, json_logs)
-    
+
     return logging.getLogger("surrogate_optim")
 
 
 def _get_standard_logging_config(
-    level: int, 
-    format_type: str, 
+    level: int,
+    format_type: str,
     log_file: Optional[str] = None
 ) -> Dict[str, Any]:
     """Get standard logging configuration."""
-    
     formats = {
         "minimal": "%(levelname)s: %(message)s",
         "standard": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -70,9 +67,9 @@ def _get_standard_logging_config(
             "%(filename)s:%(lineno)d - %(funcName)s - %(message)s"
         ),
     }
-    
+
     format_string = formats.get(format_type, formats["standard"])
-    
+
     config = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -108,13 +105,13 @@ def _get_standard_logging_config(
             },
         },
     }
-    
+
     # Add file handler if log file is specified
     if log_file:
         # Ensure log directory exists
         log_path = Path(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         config["handlers"]["file"] = {
             "class": "logging.handlers.RotatingFileHandler",
             "level": level,
@@ -123,19 +120,18 @@ def _get_standard_logging_config(
             "maxBytes": 10 * 1024 * 1024,  # 10MB
             "backupCount": 5,
         }
-        
+
         config["root"]["handlers"].append("file")
         config["loggers"]["surrogate_optim"]["handlers"].append("file")
-    
+
     return config
 
 
 def _get_json_logging_config(
-    level: int, 
+    level: int,
     log_file: Optional[str] = None
 ) -> Dict[str, Any]:
     """Get JSON logging configuration."""
-    
     config = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -168,12 +164,12 @@ def _get_json_logging_config(
             },
         },
     }
-    
+
     # Add file handler if log file is specified
     if log_file:
         log_path = Path(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         config["handlers"]["file"] = {
             "class": "logging.handlers.RotatingFileHandler",
             "level": level,
@@ -182,23 +178,22 @@ def _get_json_logging_config(
             "maxBytes": 10 * 1024 * 1024,  # 10MB
             "backupCount": 5,
         }
-        
+
         config["root"]["handlers"].append("file")
         config["loggers"]["surrogate_optim"]["handlers"].append("file")
-    
+
     return config
 
 
 def _setup_loguru(
-    level: str, 
-    log_file: Optional[str] = None, 
+    level: str,
+    log_file: Optional[str] = None,
     json_logs: bool = False
 ):
     """Setup loguru for enhanced logging."""
-    
     # Remove default handler
     loguru_logger.remove()
-    
+
     # Console handler
     if json_logs:
         console_format = (
@@ -217,19 +212,19 @@ def _setup_loguru(
             "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
             "<level>{message}</level>"
         )
-    
+
     loguru_logger.add(
         sys.stdout,
         format=console_format,
         level=level.upper(),
         colorize=not json_logs,
     )
-    
+
     # File handler
     if log_file:
         log_path = Path(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         if json_logs:
             file_format = console_format  # Same JSON format
         else:
@@ -239,7 +234,7 @@ def _setup_loguru(
                 "{name}:{function}:{line} - "
                 "{message}"
             )
-        
+
         loguru_logger.add(
             log_file,
             format=file_format,
@@ -264,51 +259,51 @@ def get_logger(name: str) -> logging.Logger:
 
 class StructuredLogger:
     """Enhanced logger with structured logging capabilities."""
-    
+
     def __init__(self, name: str):
         self.logger = get_logger(name)
         self.correlation_id = None
-    
+
     def set_correlation_id(self, correlation_id: str):
         """Set correlation ID for this logger."""
         self.correlation_id = correlation_id
-    
+
     def _log_with_context(self, level: int, message: str, **kwargs):
         """Log message with additional context."""
         extra = kwargs.copy()
-        
+
         if self.correlation_id:
             extra["correlation_id"] = self.correlation_id
-        
+
         # Add caller information
         import inspect
         frame = inspect.currentframe().f_back.f_back
         extra["caller_filename"] = frame.f_code.co_filename
         extra["caller_lineno"] = frame.f_lineno
         extra["caller_function"] = frame.f_code.co_name
-        
+
         self.logger.log(level, message, extra=extra)
-    
+
     def debug(self, message: str, **kwargs):
         """Log debug message."""
         self._log_with_context(logging.DEBUG, message, **kwargs)
-    
+
     def info(self, message: str, **kwargs):
         """Log info message."""
         self._log_with_context(logging.INFO, message, **kwargs)
-    
+
     def warning(self, message: str, **kwargs):
         """Log warning message."""
         self._log_with_context(logging.WARNING, message, **kwargs)
-    
+
     def error(self, message: str, **kwargs):
         """Log error message."""
         self._log_with_context(logging.ERROR, message, **kwargs)
-    
+
     def critical(self, message: str, **kwargs):
         """Log critical message."""
         self._log_with_context(logging.CRITICAL, message, **kwargs)
-    
+
     def exception(self, message: str, **kwargs):
         """Log exception with traceback."""
         kwargs["exc_info"] = True
@@ -317,10 +312,10 @@ class StructuredLogger:
 
 class PerformanceLogger:
     """Logger for performance metrics and timing."""
-    
+
     def __init__(self, name: str):
         self.logger = get_logger(f"{name}.performance")
-    
+
     def log_timing(self, operation: str, duration: float, **metadata):
         """Log timing information."""
         self.logger.info(
@@ -332,7 +327,7 @@ class PerformanceLogger:
                 **metadata,
             }
         )
-    
+
     def log_memory_usage(self, operation: str, memory_mb: float, **metadata):
         """Log memory usage information."""
         self.logger.info(
@@ -343,11 +338,11 @@ class PerformanceLogger:
                 **metadata,
             }
         )
-    
+
     def log_model_metrics(
-        self, 
-        model_name: str, 
-        loss: float, 
+        self,
+        model_name: str,
+        loss: float,
         accuracy: Optional[float] = None,
         **metrics
     ):
@@ -357,10 +352,10 @@ class PerformanceLogger:
             "loss": loss,
             **metrics,
         }
-        
+
         if accuracy is not None:
             extra["accuracy"] = accuracy
-        
+
         self.logger.info(
             f"Model '{model_name}' metrics: loss={loss:.6f}",
             extra=extra,
@@ -369,10 +364,10 @@ class PerformanceLogger:
 
 class AuditLogger:
     """Logger for audit trails and security events."""
-    
+
     def __init__(self, name: str):
         self.logger = get_logger(f"{name}.audit")
-    
+
     def log_model_training_start(self, model_type: str, dataset_size: int, **params):
         """Log start of model training."""
         self.logger.info(
@@ -385,11 +380,11 @@ class AuditLogger:
                 "timestamp": time.time(),
             }
         )
-    
+
     def log_model_training_complete(
-        self, 
-        model_type: str, 
-        duration: float, 
+        self,
+        model_type: str,
+        duration: float,
         final_loss: float
     ):
         """Log completion of model training."""
@@ -403,16 +398,16 @@ class AuditLogger:
                 "timestamp": time.time(),
             }
         )
-    
+
     def log_optimization_run(
-        self, 
-        optimizer_type: str, 
-        function_evals: int, 
+        self,
+        optimizer_type: str,
+        function_evals: int,
         final_value: float
     ):
         """Log optimization run."""
         self.logger.info(
-            f"Optimization run completed",
+            "Optimization run completed",
             extra={
                 "event_type": "optimization_complete",
                 "optimizer_type": optimizer_type,
@@ -426,11 +421,11 @@ class AuditLogger:
 # Context manager for operation logging
 class log_operation:
     """Context manager for logging operations with timing."""
-    
+
     def __init__(
-        self, 
-        logger: logging.Logger, 
-        operation: str, 
+        self,
+        logger: logging.Logger,
+        operation: str,
         level: int = logging.INFO,
         **metadata
     ):
@@ -439,7 +434,7 @@ class log_operation:
         self.level = level
         self.metadata = metadata
         self.start_time = None
-    
+
     def __enter__(self):
         self.start_time = time.time()
         self.logger.log(
@@ -448,10 +443,10 @@ class log_operation:
             extra={"operation": self.operation, **self.metadata}
         )
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         duration = time.time() - self.start_time
-        
+
         if exc_type is None:
             self.logger.log(
                 self.level,
@@ -490,12 +485,12 @@ def get_default_logger() -> logging.Logger:
         format_type = os.getenv("LOG_FORMAT", "standard")
         log_file = os.getenv("LOG_FILE")
         json_logs = os.getenv("JSON_LOGS", "false").lower() == "true"
-        
+
         _default_logger = setup_logging(
             level=level,
             format_type=format_type,
             log_file=log_file,
             json_logs=json_logs,
         )
-    
+
     return _default_logger

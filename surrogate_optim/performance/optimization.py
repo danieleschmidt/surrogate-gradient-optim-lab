@@ -1,16 +1,14 @@
 """Performance optimization and scalability enhancements."""
 
-import time
-from functools import wraps, lru_cache
-from typing import Any, Callable, Dict, Optional, Tuple, Union
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-import threading
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass
+import threading
+import time
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 import jax
+from jax import Array, jit, vmap
 import jax.numpy as jnp
-from jax import Array, jit, vmap, pmap
-from jax.experimental import host_callback
 
 
 @dataclass
@@ -26,7 +24,7 @@ class PerformanceMetrics:
 
 class JITCache:
     """Advanced JIT compilation cache with smart precompilation."""
-    
+
     def __init__(self, max_cache_size: int = 100):
         """Initialize JIT cache.
         
@@ -38,7 +36,7 @@ class JITCache:
         self.access_counts = {}
         self.compilation_times = {}
         self.lock = threading.Lock()
-    
+
     def get_or_compile(
         self,
         func: Callable,
@@ -61,21 +59,21 @@ class JITCache:
             if func_id in self.cache:
                 self.access_counts[func_id] += 1
                 return self.cache[func_id]
-            
+
             # Compile function
             start_time = time.time()
-            
+
             if static_argnums is not None:
                 compiled_func = jit(func, static_argnums=static_argnums)
             else:
                 compiled_func = jit(func)
-            
+
             # Trigger compilation if signature provided
             if input_signature is not None:
                 _ = compiled_func(*input_signature)
-            
+
             compilation_time = time.time() - start_time
-            
+
             # Manage cache size
             if len(self.cache) >= self.max_cache_size:
                 # Remove least accessed function
@@ -83,14 +81,14 @@ class JITCache:
                 del self.cache[least_accessed]
                 del self.access_counts[least_accessed]
                 del self.compilation_times[least_accessed]
-            
+
             # Store in cache
             self.cache[func_id] = compiled_func
             self.access_counts[func_id] = 1
             self.compilation_times[func_id] = compilation_time
-            
+
             return compiled_func
-    
+
     def precompile_common_functions(self, input_shapes: Dict[str, Tuple]):
         """Precompile common functions with known input shapes.
         
@@ -101,18 +99,18 @@ class JITCache:
             if func_id not in self.cache:
                 # Create dummy inputs for compilation
                 dummy_input = jnp.ones(shape)
-                
+
                 # Common function patterns
                 if "predict" in func_id:
                     def predict_func(x):
                         return jnp.sum(x**2)  # Placeholder
                     self.get_or_compile(predict_func, func_id, (dummy_input,))
-                
+
                 elif "gradient" in func_id:
                     def grad_func(x):
                         return 2 * x  # Placeholder gradient
                     self.get_or_compile(grad_func, func_id, (dummy_input,))
-    
+
     def get_cache_stats(self) -> Dict[str, Any]:
         """Get cache statistics."""
         with self.lock:
@@ -128,7 +126,7 @@ class JITCache:
 
 class OptimizedSurrogate:
     """High-performance surrogate model with advanced optimizations."""
-    
+
     def __init__(
         self,
         base_surrogate,
@@ -154,70 +152,70 @@ class OptimizedSurrogate:
         self.batch_size = batch_size
         self.enable_parallel_prediction = enable_parallel_prediction
         self.memory_efficient = memory_efficient
-        
+
         # JIT cache
         self.jit_cache = JITCache()
-        
+
         # Performance tracking
         self.performance_metrics = PerformanceMetrics(0, 0, 0, 0, 0, 0)
-        
+
         # Compiled functions
         self._compiled_predict = None
         self._compiled_gradient = None
         self._vectorized_predict = None
         self._vectorized_gradient = None
-        
+
         # State
         self.is_fitted = False
-    
+
     def fit(self, dataset) -> "OptimizedSurrogate":
         """Fit surrogate with performance optimizations."""
         # Fit base model
         self.base_surrogate.fit(dataset)
         self.is_fitted = True
-        
+
         # Pre-compile functions if JIT is enabled
         if self.enable_jit:
             self._compile_functions(dataset)
-        
+
         return self
-    
+
     def _compile_functions(self, dataset):
         """Compile prediction and gradient functions."""
         sample_input = dataset.X[0] if dataset.X.ndim > 1 else dataset.X
-        
+
         # Compile prediction function
         def predict_func(x):
             return self.base_surrogate.predict(x)
-        
+
         self._compiled_predict = self.jit_cache.get_or_compile(
             predict_func,
             "predict",
             (sample_input,)
         )
-        
+
         # Compile gradient function
         def gradient_func(x):
             return self.base_surrogate.gradient(x)
-        
+
         self._compiled_gradient = self.jit_cache.get_or_compile(
             gradient_func,
             "gradient",
             (sample_input,)
         )
-        
+
         # Vectorized versions
         if self.enable_vectorization:
             self._vectorized_predict = vmap(self._compiled_predict)
             self._vectorized_gradient = vmap(self._compiled_gradient)
-    
+
     def predict(self, x: Array) -> Array:
         """Optimized prediction with batching and parallelization."""
         if not self.is_fitted:
             return self.base_surrogate.predict(x)
-        
+
         start_time = time.time()
-        
+
         # Handle different input shapes
         if x.ndim == 1:
             # Single point prediction
@@ -228,23 +226,23 @@ class OptimizedSurrogate:
         else:
             # Multiple points prediction
             result = self._predict_batch(x)
-        
+
         execution_time = time.time() - start_time
         self.performance_metrics.execution_time += execution_time
-        
+
         return result
-    
+
     def _predict_batch(self, x_batch: Array) -> Array:
         """Optimized batch prediction."""
         n_points = x_batch.shape[0]
-        
+
         # Use vectorized prediction if available and efficient
-        if (self.enable_vectorization and 
-            self._vectorized_predict and 
+        if (self.enable_vectorization and
+            self._vectorized_predict and
             (self.batch_size is None or n_points <= self.batch_size * 2)):
-            
+
             return self._vectorized_predict(x_batch)
-        
+
         # Manual batching for large inputs
         if self.batch_size and n_points > self.batch_size:
             results = []
@@ -259,23 +257,22 @@ class OptimizedSurrogate:
                     ])
                 results.append(batch_result)
             return jnp.concatenate(results)
-        
+
         # Standard vectorized prediction
         if self._vectorized_predict:
             return self._vectorized_predict(x_batch)
-        else:
-            return jnp.array([
-                self._compiled_predict(point) if self._compiled_predict else self.base_surrogate.predict(point)
-                for point in x_batch
-            ])
-    
+        return jnp.array([
+            self._compiled_predict(point) if self._compiled_predict else self.base_surrogate.predict(point)
+            for point in x_batch
+        ])
+
     def gradient(self, x: Array) -> Array:
         """Optimized gradient computation."""
         if not self.is_fitted:
             return self.base_surrogate.gradient(x)
-        
+
         start_time = time.time()
-        
+
         if x.ndim == 1:
             # Single point gradient
             if self.enable_jit and self._compiled_gradient:
@@ -285,23 +282,23 @@ class OptimizedSurrogate:
         else:
             # Multiple points gradient
             result = self._gradient_batch(x)
-        
+
         execution_time = time.time() - start_time
         self.performance_metrics.execution_time += execution_time
-        
+
         return result
-    
+
     def _gradient_batch(self, x_batch: Array) -> Array:
         """Optimized batch gradient computation."""
         n_points = x_batch.shape[0]
-        
+
         # Use vectorized gradients if available
-        if (self.enable_vectorization and 
-            self._vectorized_gradient and 
+        if (self.enable_vectorization and
+            self._vectorized_gradient and
             (self.batch_size is None or n_points <= self.batch_size * 2)):
-            
+
             return self._vectorized_gradient(x_batch)
-        
+
         # Manual batching
         if self.batch_size and n_points > self.batch_size:
             results = []
@@ -316,24 +313,23 @@ class OptimizedSurrogate:
                     ])
                 results.append(batch_result)
             return jnp.concatenate(results)
-        
+
         # Standard vectorized gradient
         if self._vectorized_gradient:
             return self._vectorized_gradient(x_batch)
-        else:
-            return jnp.array([
-                self._compiled_gradient(point) if self._compiled_gradient else self.base_surrogate.gradient(point)
-                for point in x_batch
-            ])
-    
+        return jnp.array([
+            self._compiled_gradient(point) if self._compiled_gradient else self.base_surrogate.gradient(point)
+            for point in x_batch
+        ])
+
     def uncertainty(self, x: Array) -> Array:
         """Optimized uncertainty estimation."""
         return self.base_surrogate.uncertainty(x)
-    
+
     def get_performance_metrics(self) -> Dict[str, Any]:
         """Get performance metrics."""
         cache_stats = self.jit_cache.get_cache_stats()
-        
+
         return {
             "execution_time": self.performance_metrics.execution_time,
             "jit_enabled": self.enable_jit,
@@ -345,7 +341,7 @@ class OptimizedSurrogate:
 
 class ParallelOptimizer:
     """Parallel optimization with multi-start and ensemble approaches."""
-    
+
     def __init__(
         self,
         base_optimizer,
@@ -365,7 +361,7 @@ class ParallelOptimizer:
         self.n_parallel = n_parallel
         self.execution_backend = execution_backend
         self.load_balancing = load_balancing
-        
+
         # Executor setup
         if execution_backend == "thread":
             self.executor = ThreadPoolExecutor(max_workers=n_parallel)
@@ -375,9 +371,9 @@ class ParallelOptimizer:
             self.executor = None  # Use JAX parallelization
         else:
             raise ValueError(f"Unknown execution backend: {execution_backend}")
-        
+
         self.performance_metrics = PerformanceMetrics(0, 0, 0, 0, 0, 0)
-    
+
     def optimize(self, surrogate, x0_list, bounds=None, **kwargs):
         """Parallel optimization from multiple starting points.
         
@@ -391,29 +387,29 @@ class ParallelOptimizer:
             Best optimization result
         """
         start_time = time.time()
-        
+
         if self.execution_backend == "jax":
             results = self._optimize_jax_parallel(surrogate, x0_list, bounds, **kwargs)
         else:
             results = self._optimize_executor_parallel(surrogate, x0_list, bounds, **kwargs)
-        
+
         execution_time = time.time() - start_time
         self.performance_metrics.execution_time += execution_time
-        
+
         # Find best result
-        best_result = min(results, key=lambda r: r.fun if r.success else float('inf'))
-        
+        best_result = min(results, key=lambda r: r.fun if r.success else float("inf"))
+
         # Calculate parallel efficiency
         sequential_time_estimate = execution_time * self.n_parallel
         self.performance_metrics.parallel_efficiency = sequential_time_estimate / execution_time if execution_time > 0 else 0
-        
+
         return best_result
-    
+
     def _optimize_jax_parallel(self, surrogate, x0_list, bounds, **kwargs):
         """JAX-based parallel optimization."""
         # Convert to JAX arrays
         x0_array = jnp.stack(x0_list)
-        
+
         # Define optimization function for single point
         def single_optimize(x0):
             return self.base_optimizer.optimize(
@@ -422,7 +418,7 @@ class ParallelOptimizer:
                 bounds=bounds,
                 **kwargs
             )
-        
+
         # Use vmap for parallel execution (if supported)
         try:
             vectorized_optimize = vmap(single_optimize)
@@ -431,7 +427,7 @@ class ParallelOptimizer:
         except:
             # Fallback to sequential execution
             return [single_optimize(x0) for x0 in x0_list]
-    
+
     def _optimize_executor_parallel(self, surrogate, x0_list, bounds, **kwargs):
         """Executor-based parallel optimization."""
         # Submit optimization tasks
@@ -445,7 +441,7 @@ class ParallelOptimizer:
                 **kwargs
             )
             future_to_x0[future] = x0
-        
+
         # Collect results
         results = []
         for future in future_to_x0:
@@ -457,25 +453,25 @@ class ParallelOptimizer:
                 from ..optimizers.base import OptimizationResult
                 failure_result = OptimizationResult(
                     x=future_to_x0[future],
-                    fun=float('inf'),
+                    fun=float("inf"),
                     success=False,
                     message=f"Parallel optimization failed: {e}",
                     nit=0,
                     nfev=0
                 )
                 results.append(failure_result)
-        
+
         return results
-    
+
     def __del__(self):
         """Cleanup executor."""
-        if hasattr(self, 'executor') and self.executor:
+        if hasattr(self, "executor") and self.executor:
             self.executor.shutdown(wait=True)
 
 
 class MemoryOptimizer:
     """Memory optimization utilities for large-scale problems."""
-    
+
     @staticmethod
     def chunked_operation(
         operation: Callable,
@@ -496,7 +492,7 @@ class MemoryOptimizer:
         """
         if data.shape[axis] <= chunk_size:
             return operation(data)
-        
+
         results = []
         for i in range(0, data.shape[axis], chunk_size):
             if axis == 0:
@@ -505,12 +501,12 @@ class MemoryOptimizer:
                 chunk = data[:, i:i+chunk_size]
             else:
                 raise NotImplementedError("Only axis 0 and 1 supported")
-            
+
             chunk_result = operation(chunk)
             results.append(chunk_result)
-        
+
         return jnp.concatenate(results, axis=axis)
-    
+
     @staticmethod
     def gradient_checkpointing(func: Callable, *args, **kwargs):
         """Apply gradient checkpointing to reduce memory usage.
@@ -519,17 +515,18 @@ class MemoryOptimizer:
         In practice, this would use JAX's checkpointing utilities.
         """
         return func(*args, **kwargs)
-    
+
     @staticmethod
     def get_memory_usage() -> Dict[str, float]:
         """Get current memory usage statistics."""
         try:
-            import psutil
             import os
-            
+
+            import psutil
+
             process = psutil.Process(os.getpid())
             memory_info = process.memory_info()
-            
+
             return {
                 "rss_mb": memory_info.rss / 1024 / 1024,
                 "vms_mb": memory_info.vms / 1024 / 1024,
@@ -555,10 +552,10 @@ def optimize_for_hardware(func: Callable, device_type: str = "auto") -> Callable
         if jax.device_count("gpu") > 0:
             device_type = "gpu"
         elif jax.device_count("tpu") > 0:
-            device_type = "tpu" 
+            device_type = "tpu"
         else:
             device_type = "cpu"
-    
+
     # Apply device-specific optimizations
     if device_type == "gpu":
         # GPU optimizations: prefer larger batch sizes, use float32
@@ -569,13 +566,13 @@ def optimize_for_hardware(func: Callable, device_type: str = "auto") -> Callable
     else:
         # CPU optimizations: smaller batch sizes, can use float64
         optimized_func = jit(func)
-    
+
     return optimized_func
 
 
 class AdaptivePerformanceTuner:
     """Adaptive performance tuning based on runtime characteristics."""
-    
+
     def __init__(self):
         """Initialize adaptive performance tuner."""
         self.performance_history = []
@@ -586,7 +583,7 @@ class AdaptivePerformanceTuner:
             "parallel_workers": 4,
         }
         self.tuning_iterations = 0
-    
+
     def tune_config(self, benchmark_func: Callable, test_data: Array) -> Dict[str, Any]:
         """Automatically tune configuration based on performance.
         
@@ -598,8 +595,8 @@ class AdaptivePerformanceTuner:
             Optimized configuration
         """
         best_config = self.current_config.copy()
-        best_time = float('inf')
-        
+        best_time = float("inf")
+
         # Test different configurations
         test_configs = [
             {"batch_size": 50, "enable_jit": True},
@@ -608,59 +605,59 @@ class AdaptivePerformanceTuner:
             {"batch_size": 100, "enable_jit": False},
             {"batch_size": 100, "enable_vectorization": False},
         ]
-        
+
         for config in test_configs:
             test_config = {**self.current_config, **config}
-            
+
             # Benchmark configuration
             start_time = time.time()
             try:
                 _ = benchmark_func(test_data, **test_config)
                 execution_time = time.time() - start_time
-                
+
                 if execution_time < best_time:
                     best_time = execution_time
                     best_config = test_config
-                    
+
             except Exception:
                 continue
-        
+
         self.current_config = best_config
         self.tuning_iterations += 1
-        
+
         self.performance_history.append({
             "iteration": self.tuning_iterations,
             "config": best_config.copy(),
             "execution_time": best_time,
         })
-        
+
         return best_config
-    
+
     def get_recommendations(self) -> Dict[str, Any]:
         """Get performance optimization recommendations."""
         if len(self.performance_history) < 2:
             return {"status": "insufficient_data"}
-        
+
         latest = self.performance_history[-1]
         previous = self.performance_history[-2]
-        
+
         improvement = (previous["execution_time"] - latest["execution_time"]) / previous["execution_time"]
-        
+
         recommendations = {
             "performance_improvement": improvement,
             "current_config": latest["config"],
             "recommendations": []
         }
-        
+
         # Generate specific recommendations
         if improvement < 0.05:  # Less than 5% improvement
             recommendations["recommendations"].append(
                 "Consider increasing batch size or enabling more aggressive optimizations"
             )
-        
+
         if latest["config"]["enable_jit"] and latest["execution_time"] > 1.0:
             recommendations["recommendations"].append(
                 "JIT compilation overhead detected. Consider pre-compilation for repeated operations"
             )
-        
+
         return recommendations

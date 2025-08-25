@@ -2,14 +2,14 @@
 
 from typing import Any, Dict, List, Optional, Tuple
 
-import jax.numpy as jnp
 from jax import Array
+import jax.numpy as jnp
 
 from ..models.base import Surrogate
 from .base import OptimizationResult
 from .gradient_descent import GradientDescentOptimizer
-from .trust_region import TrustRegionOptimizer
 from .multi_start import MultiStartOptimizer
+from .trust_region import TrustRegionOptimizer
 
 
 def optimize_with_surrogate(
@@ -33,7 +33,7 @@ def optimize_with_surrogate(
     """
     if options is None:
         options = {}
-    
+
     if method == "gradient_descent":
         optimizer = GradientDescentOptimizer(**options)
     elif method == "trust_region":
@@ -42,7 +42,7 @@ def optimize_with_surrogate(
         optimizer = MultiStartOptimizer(**options)
     else:
         raise ValueError(f"Unknown optimization method: {method}")
-    
+
     return optimizer.optimize(surrogate, x0, bounds)
 
 
@@ -67,15 +67,15 @@ def compare_optimizers(
     """
     if methods is None:
         methods = ["gradient_descent", "trust_region", "multi_start"]
-    
+
     if options_dict is None:
         options_dict = {}
-    
+
     results = {}
-    
+
     for method in methods:
         print(f"Running optimization with {method}...")
-        
+
         try:
             options = options_dict.get(method, {})
             result = optimize_with_surrogate(
@@ -86,21 +86,21 @@ def compare_optimizers(
                 options=options
             )
             results[method] = result
-            
+
             status = "✓" if result.success else "✗"
             print(f"  {status} {method}: f = {result.fun:.6f}, iterations = {result.nit}")
-            
+
         except Exception as e:
             print(f"  ✗ {method}: Failed with error: {e}")
             results[method] = OptimizationResult(
                 x=x0,
-                fun=float('inf'),
+                fun=float("inf"),
                 success=False,
                 message=f"Error: {e}",
                 nit=0,
                 nfev=0
             )
-    
+
     return results
 
 
@@ -121,20 +121,20 @@ def create_optimization_summary(result: OptimizationResult) -> str:
     summary.append(f"Iterations: {result.nit}")
     summary.append(f"Function evaluations: {result.nfev}")
     summary.append(f"Message: {result.message}")
-    
+
     if result.metadata:
         summary.append("\n--- Additional Information ---")
         for key, value in result.metadata.items():
             if key not in ["trajectory", "convergence_history", "local_results"]:
                 summary.append(f"{key}: {value}")
-    
+
     if result.trajectory and len(result.trajectory) > 1:
         trajectory_array = jnp.stack([jnp.asarray(point) for point in result.trajectory])
         total_distance = float(jnp.sum(jnp.linalg.norm(
             trajectory_array[1:] - trajectory_array[:-1], axis=1
         )))
         summary.append(f"Total trajectory distance: {total_distance:.6f}")
-    
+
     return "\n".join(summary)
 
 
@@ -153,14 +153,14 @@ def analyze_convergence(result: OptimizationResult) -> Dict[str, Any]:
         "iterations": result.nit,
         "function_evaluations": result.nfev,
     }
-    
+
     if result.convergence_history and len(result.convergence_history) > 1:
         history = jnp.array(result.convergence_history)
-        
+
         # Function value improvements
         improvements = history[:-1] - history[1:]
         positive_improvements = improvements[improvements > 0]
-        
+
         analysis.update({
             "initial_value": float(history[0]),
             "total_improvement": float(history[0] - history[-1]),
@@ -169,7 +169,7 @@ def analyze_convergence(result: OptimizationResult) -> Dict[str, Any]:
             "n_improving_steps": int(jnp.sum(improvements > 0)),
             "improvement_rate": float(len(positive_improvements) / len(improvements)),
         })
-        
+
         # Convergence rate estimation (linear)
         if len(history) > 10:
             # Fit linear trend to log of function values (if positive)
@@ -177,27 +177,27 @@ def analyze_convergence(result: OptimizationResult) -> Dict[str, Any]:
                 log_history = jnp.log(history)
                 n = len(log_history)
                 x = jnp.arange(n)
-                
+
                 # Linear regression
                 A = jnp.vstack([x, jnp.ones(n)]).T
                 slope, intercept = jnp.linalg.lstsq(A, log_history, rcond=None)[0]
-                
+
                 analysis["convergence_rate"] = float(slope)
                 analysis["convergence_fit_quality"] = float(
                     1 - jnp.var(log_history - (slope * x + intercept)) / jnp.var(log_history)
                 )
-    
+
     if result.trajectory and len(result.trajectory) > 1:
         trajectory_array = jnp.stack([jnp.asarray(point) for point in result.trajectory])
-        
+
         # Step sizes
         step_sizes = jnp.linalg.norm(trajectory_array[1:] - trajectory_array[:-1], axis=1)
-        
+
         analysis.update({
             "mean_step_size": float(jnp.mean(step_sizes)),
             "min_step_size": float(jnp.min(step_sizes)),
             "max_step_size": float(jnp.max(step_sizes)),
             "final_step_size": float(step_sizes[-1]),
         })
-    
+
     return analysis
