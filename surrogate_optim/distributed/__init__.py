@@ -5,7 +5,7 @@ from .cluster_manager import *
 __all__ = [
     # Cluster management
     "NodeStatus",
-    "TaskStatus", 
+    "TaskStatus",
     "LoadBalancingStrategy",
     "NodeInfo",
     "Task",

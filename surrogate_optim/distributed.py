@@ -1,17 +1,16 @@
 """Distributed computing support for large-scale surrogate optimization."""
 
-import time
+from dataclasses import asdict, dataclass
 import json
-import pickle
-from typing import Any, Dict, List, Optional, Callable, Union
-from concurrent.futures import Future, as_completed
-from dataclasses import dataclass, asdict
-import threading
-import queue
 from pathlib import Path
+import pickle
+import queue
+import threading
+import time
+from typing import Any, Callable, Dict, List, Optional
 
-import jax.numpy as jnp
 from jax import Array
+import jax.numpy as jnp
 
 
 @dataclass
@@ -24,7 +23,7 @@ class ComputeTask:
     kwargs: dict
     priority: int = 0
     created_at: float = 0.0
-    
+
     def __post_init__(self):
         if self.created_at == 0.0:
             self.created_at = time.time()
@@ -40,7 +39,7 @@ class TaskResult:
     execution_time: float = 0.0
     worker_id: Optional[str] = None
     completed_at: float = 0.0
-    
+
     def __post_init__(self):
         if self.completed_at == 0.0:
             self.completed_at = time.time()
@@ -48,7 +47,7 @@ class TaskResult:
 
 class DistributedTaskManager:
     """Manages distributed task execution across multiple workers."""
-    
+
     def __init__(
         self,
         max_concurrent_tasks: int = 10,
@@ -67,18 +66,18 @@ class DistributedTaskManager:
         self.max_concurrent_tasks = max_concurrent_tasks
         self.task_timeout = task_timeout
         self.enable_task_persistence = enable_task_persistence
-        
+
         # Task management
         self.task_queue = queue.PriorityQueue(maxsize=task_queue_size)
         self.active_tasks = {}  # task_id -> Future
         self.completed_tasks = {}  # task_id -> TaskResult
         self.failed_tasks = {}  # task_id -> TaskResult
-        
+
         # Threading
         self.lock = threading.Lock()
         self.running = False
         self.worker_threads = []
-        
+
         # Statistics
         self.stats = {
             "tasks_submitted": 0,
@@ -86,20 +85,20 @@ class DistributedTaskManager:
             "tasks_failed": 0,
             "total_execution_time": 0.0,
         }
-        
+
         # Task persistence
         if enable_task_persistence:
             self.task_storage_dir = Path("distributed_tasks")
             self.task_storage_dir.mkdir(exist_ok=True)
-    
+
     def start(self):
         """Start the distributed task manager."""
         with self.lock:
             if self.running:
                 return
-            
+
             self.running = True
-            
+
             # Start worker threads
             for i in range(self.max_concurrent_tasks):
                 worker = threading.Thread(
@@ -109,22 +108,22 @@ class DistributedTaskManager:
                 )
                 worker.start()
                 self.worker_threads.append(worker)
-    
+
     def stop(self):
         """Stop the distributed task manager."""
         with self.lock:
             if not self.running:
                 return
-            
+
             self.running = False
-            
+
             # Signal workers to stop
             for _ in self.worker_threads:
                 try:
                     self.task_queue.put((0, None), timeout=1.0)
                 except queue.Full:
                     pass
-    
+
     def submit_task(
         self,
         task_type: str,
@@ -146,7 +145,7 @@ class DistributedTaskManager:
             Task ID
         """
         kwargs = kwargs or {}
-        
+
         task_id = f"{task_type}_{int(time.time() * 1000000)}"
         task = ComputeTask(
             task_id=task_id,
@@ -156,11 +155,11 @@ class DistributedTaskManager:
             kwargs=kwargs,
             priority=priority
         )
-        
+
         # Persist task if enabled
         if self.enable_task_persistence:
             self._persist_task(task)
-        
+
         # Add to queue (priority queue uses negative priority for max-heap)
         try:
             self.task_queue.put((-priority, task), timeout=1.0)
@@ -169,7 +168,7 @@ class DistributedTaskManager:
             return task_id
         except queue.Full:
             raise RuntimeError("Task queue is full")
-    
+
     def get_task_result(self, task_id: str, timeout: Optional[float] = None) -> Optional[TaskResult]:
         """Get result of a completed task.
         
@@ -181,7 +180,7 @@ class DistributedTaskManager:
             Task result or None if not ready
         """
         start_time = time.time()
-        
+
         while True:
             # Check completed tasks
             with self.lock:
@@ -189,13 +188,13 @@ class DistributedTaskManager:
                     return self.completed_tasks[task_id]
                 if task_id in self.failed_tasks:
                     return self.failed_tasks[task_id]
-            
+
             # Check timeout
             if timeout and (time.time() - start_time) > timeout:
                 return None
-            
+
             time.sleep(0.1)
-    
+
     def wait_for_completion(self, task_ids: List[str], timeout: Optional[float] = None) -> Dict[str, TaskResult]:
         """Wait for multiple tasks to complete.
         
@@ -208,36 +207,36 @@ class DistributedTaskManager:
         """
         results = {}
         start_time = time.time()
-        
+
         while len(results) < len(task_ids):
             for task_id in task_ids:
                 if task_id not in results:
                     result = self.get_task_result(task_id, timeout=0.1)
                     if result:
                         results[task_id] = result
-            
+
             # Check timeout
             if timeout and (time.time() - start_time) > timeout:
                 break
-            
+
             if len(results) < len(task_ids):
                 time.sleep(0.1)
-        
+
         return results
-    
+
     def _worker_loop(self, worker_id: str):
         """Main worker loop for processing tasks."""
         while self.running:
             try:
                 # Get task from queue
                 priority, task = self.task_queue.get(timeout=1.0)
-                
+
                 if task is None:  # Stop signal
                     break
-                
+
                 # Execute task
                 result = self._execute_task(task, worker_id)
-                
+
                 # Store result
                 with self.lock:
                     if result.success:
@@ -246,18 +245,18 @@ class DistributedTaskManager:
                     else:
                         self.failed_tasks[task.task_id] = result
                         self.stats["tasks_failed"] += 1
-                    
+
                     self.stats["total_execution_time"] += result.execution_time
-                
+
                 # Persist result if enabled
                 if self.enable_task_persistence:
                     self._persist_result(result)
-                
+
             except queue.Empty:
                 continue
             except Exception as e:
                 print(f"Worker {worker_id} error: {e}")
-    
+
     def _execute_task(self, task: ComputeTask, worker_id: str) -> TaskResult:
         """Execute a single task.
         
@@ -269,16 +268,16 @@ class DistributedTaskManager:
             Task result
         """
         start_time = time.time()
-        
+
         try:
             # Get function from registry
             func = self._get_function(task.function_name)
-            
+
             # Execute function
             result = func(*task.args, **task.kwargs)
-            
+
             execution_time = time.time() - start_time
-            
+
             return TaskResult(
                 task_id=task.task_id,
                 success=True,
@@ -286,10 +285,10 @@ class DistributedTaskManager:
                 execution_time=execution_time,
                 worker_id=worker_id
             )
-            
+
         except Exception as e:
             execution_time = time.time() - start_time
-            
+
             return TaskResult(
                 task_id=task.task_id,
                 success=False,
@@ -297,7 +296,7 @@ class DistributedTaskManager:
                 execution_time=execution_time,
                 worker_id=worker_id
             )
-    
+
     def _get_function(self, function_name: str) -> Callable:
         """Get function by name from registry.
         
@@ -315,50 +314,50 @@ class DistributedTaskManager:
             "optimize": self._optimize_function,
             "evaluate": self._evaluate_function,
         }
-        
+
         if function_name not in function_registry:
             raise ValueError(f"Unknown function: {function_name}")
-        
+
         return function_registry[function_name]
-    
+
     def _predict_function(self, surrogate, x):
         """Distributed prediction function."""
         return surrogate.predict(x)
-    
+
     def _gradient_function(self, surrogate, x):
         """Distributed gradient function."""
         return surrogate.gradient(x)
-    
+
     def _uncertainty_function(self, surrogate, x):
         """Distributed uncertainty function."""
         return surrogate.uncertainty(x)
-    
+
     def _optimize_function(self, optimizer, surrogate, x0, bounds=None, **kwargs):
         """Distributed optimization function."""
         return optimizer.optimize(surrogate, x0, bounds, **kwargs)
-    
+
     def _evaluate_function(self, func, x):
         """Distributed function evaluation."""
         return func(x)
-    
+
     def _persist_task(self, task: ComputeTask):
         """Persist task to disk."""
         if not self.enable_task_persistence:
             return
-        
+
         task_file = self.task_storage_dir / f"task_{task.task_id}.json"
-        with open(task_file, 'w') as f:
+        with open(task_file, "w") as f:
             json.dump(asdict(task), f, indent=2)
-    
+
     def _persist_result(self, result: TaskResult):
         """Persist result to disk."""
         if not self.enable_task_persistence:
             return
-        
+
         result_file = self.task_storage_dir / f"result_{result.task_id}.pkl"
-        with open(result_file, 'wb') as f:
+        with open(result_file, "wb") as f:
             pickle.dump(result, f)
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get execution statistics."""
         with self.lock:
@@ -367,18 +366,18 @@ class DistributedTaskManager:
             stats["completed_tasks"] = len(self.completed_tasks)
             stats["failed_tasks"] = len(self.failed_tasks)
             stats["queue_size"] = self.task_queue.qsize()
-            
+
             if stats["tasks_completed"] > 0:
                 stats["average_execution_time"] = stats["total_execution_time"] / stats["tasks_completed"]
             else:
                 stats["average_execution_time"] = 0.0
-            
+
             return stats
 
 
 class DistributedSurrogateOptimizer:
     """Distributed surrogate optimizer using task-based parallelism."""
-    
+
     def __init__(
         self,
         base_optimizer,
@@ -397,13 +396,13 @@ class DistributedSurrogateOptimizer:
         self.base_optimizer = base_optimizer
         self.enable_distributed_training = enable_distributed_training
         self.enable_distributed_optimization = enable_distributed_optimization
-        
+
         if task_manager is None:
             self.task_manager = DistributedTaskManager()
             self.task_manager.start()
         else:
             self.task_manager = task_manager
-    
+
     def fit_surrogate_distributed(self, datasets: List[Any]) -> List[str]:
         """Fit multiple surrogate models in parallel.
         
@@ -420,7 +419,7 @@ class DistributedSurrogateOptimizer:
                 self.base_optimizer.fit_surrogate(dataset)
                 results.append(None)
             return results
-        
+
         task_ids = []
         for i, dataset in enumerate(datasets):
             task_id = self.task_manager.submit_task(
@@ -430,9 +429,9 @@ class DistributedSurrogateOptimizer:
                 priority=1
             )
             task_ids.append(task_id)
-        
+
         return task_ids
-    
+
     def optimize_distributed(self, surrogate, initial_points: List[Array], bounds=None, **kwargs) -> List[str]:
         """Run optimization from multiple starting points in parallel.
         
@@ -452,7 +451,7 @@ class DistributedSurrogateOptimizer:
                 result = self.base_optimizer.optimize(surrogate, x0, bounds, **kwargs)
                 results.append(result)
             return results
-        
+
         task_ids = []
         for i, x0 in enumerate(initial_points):
             task_id = self.task_manager.submit_task(
@@ -463,9 +462,9 @@ class DistributedSurrogateOptimizer:
                 priority=2
             )
             task_ids.append(task_id)
-        
+
         return task_ids
-    
+
     def predict_distributed(self, surrogate, x_points: List[Array]) -> List[str]:
         """Distribute prediction across multiple point sets.
         
@@ -485,9 +484,9 @@ class DistributedSurrogateOptimizer:
                 priority=0
             )
             task_ids.append(task_id)
-        
+
         return task_ids
-    
+
     def collect_results(self, task_ids: List[str], timeout: Optional[float] = None) -> Dict[str, Any]:
         """Collect results from distributed tasks.
         
@@ -499,7 +498,7 @@ class DistributedSurrogateOptimizer:
             Dictionary of results
         """
         return self.task_manager.wait_for_completion(task_ids, timeout)
-    
+
     def get_best_optimization_result(self, task_ids: List[str], timeout: Optional[float] = None):
         """Get best optimization result from parallel runs.
         
@@ -511,22 +510,22 @@ class DistributedSurrogateOptimizer:
             Best optimization result
         """
         results = self.collect_results(task_ids, timeout)
-        
+
         best_result = None
-        best_value = float('inf')
-        
+        best_value = float("inf")
+
         for task_id, task_result in results.items():
-            if task_result.success and hasattr(task_result.result, 'fun'):
+            if task_result.success and hasattr(task_result.result, "fun"):
                 if task_result.result.fun < best_value:
                     best_value = task_result.result.fun
                     best_result = task_result.result
-        
+
         return best_result
 
 
 class DataDistributor:
     """Manages distribution of large datasets across workers."""
-    
+
     def __init__(self, chunk_size: int = 1000):
         """Initialize data distributor.
         
@@ -534,7 +533,7 @@ class DataDistributor:
             chunk_size: Size of data chunks
         """
         self.chunk_size = chunk_size
-    
+
     def distribute_dataset(self, dataset, n_partitions: int) -> List[Any]:
         """Distribute dataset across partitions.
         
@@ -547,7 +546,7 @@ class DataDistributor:
         """
         n_samples = dataset.n_samples
         partition_size = n_samples // n_partitions
-        
+
         partitions = []
         for i in range(n_partitions):
             start_idx = i * partition_size
@@ -555,7 +554,7 @@ class DataDistributor:
                 end_idx = n_samples
             else:
                 end_idx = start_idx + partition_size
-            
+
             # Create partition
             from .models.base import Dataset
             partition = Dataset(
@@ -565,9 +564,9 @@ class DataDistributor:
                 metadata=dataset.metadata.copy()
             )
             partitions.append(partition)
-        
+
         return partitions
-    
+
     def merge_predictions(self, prediction_chunks: List[Array]) -> Array:
         """Merge prediction results from multiple chunks.
         
@@ -578,7 +577,7 @@ class DataDistributor:
             Merged predictions
         """
         return jnp.concatenate(prediction_chunks, axis=0)
-    
+
     def distribute_points(self, points: Array, n_chunks: int) -> List[Array]:
         """Distribute points across chunks for parallel processing.
         
@@ -591,7 +590,7 @@ class DataDistributor:
         """
         n_points = points.shape[0]
         chunk_size = n_points // n_chunks
-        
+
         chunks = []
         for i in range(n_chunks):
             start_idx = i * chunk_size
@@ -599,9 +598,9 @@ class DataDistributor:
                 end_idx = n_points
             else:
                 end_idx = start_idx + chunk_size
-            
+
             chunks.append(points[start_idx:end_idx])
-        
+
         return chunks
 
 

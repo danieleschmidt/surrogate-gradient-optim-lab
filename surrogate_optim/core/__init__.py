@@ -1,8 +1,8 @@
 """Core optimization components with enhanced robustness."""
 
 # Re-export SurrogateOptimizer from the parent core.py module
-import sys
 from pathlib import Path
+import sys
 
 # Add parent directory to path to access core.py
 parent_dir = Path(__file__).parent.parent
@@ -10,6 +10,12 @@ sys.path.insert(0, str(parent_dir))
 
 try:
     # Import all required dependencies first
+    # Now create a SurrogateOptimizer class here
+    from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+
+    from jax import Array
+    import jax.numpy as jnp
+
     from ..data.collector import DataCollector, collect_data
     from ..models.base import Dataset, Surrogate
     from ..models.gaussian_process import GPSurrogate
@@ -17,17 +23,12 @@ try:
     from ..models.random_forest import RandomForestSurrogate
     from ..optimizers.base import OptimizationResult
     from ..optimizers.gradient_descent import GradientDescentOptimizer
-    from ..optimizers.trust_region import TrustRegionOptimizer
     from ..optimizers.multi_start import MultiStartOptimizer
-    
-    # Now create a SurrogateOptimizer class here
-    from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-    import jax.numpy as jnp
-    from jax import Array
-    
+    from ..optimizers.trust_region import TrustRegionOptimizer
+
     class SurrogateOptimizer:
         """Main interface for surrogate gradient optimization."""
-        
+
         def __init__(
             self,
             surrogate_type: str = "neural_network",
@@ -39,74 +40,72 @@ try:
             self.surrogate_params = surrogate_params or {}
             self.optimizer_type = optimizer_type
             self.optimizer_params = optimizer_params or {}
-            
+
             # Initialize surrogate model
             self.surrogate = self._create_surrogate()
-            
+
             # Initialize optimizer
             self.optimizer = self._create_optimizer()
-            
+
             # State
             self.is_fitted = False
             self.training_data = None
-        
+
         def _create_surrogate(self) -> Surrogate:
             """Create surrogate model based on configuration."""
             if self.surrogate_type in ["neural_network", "nn"]:
                 return NeuralSurrogate(**self.surrogate_params)
-            elif self.surrogate_type in ["gaussian_process", "gp"]:
+            if self.surrogate_type in ["gaussian_process", "gp"]:
                 return GPSurrogate(**self.surrogate_params)
-            elif self.surrogate_type in ["random_forest", "rf"]:
+            if self.surrogate_type in ["random_forest", "rf"]:
                 return RandomForestSurrogate(**self.surrogate_params)
-            else:
-                raise ValueError(f"Unknown surrogate type: {self.surrogate_type}")
-        
+            raise ValueError(f"Unknown surrogate type: {self.surrogate_type}")
+
         def _create_optimizer(self):
             """Create optimizer based on configuration."""
             if self.optimizer_type == "gradient_descent":
                 return GradientDescentOptimizer(**self.optimizer_params)
-            elif self.optimizer_type == "trust_region":
+            if self.optimizer_type == "trust_region":
                 return TrustRegionOptimizer(**self.optimizer_params)
-            elif self.optimizer_type == "multi_start":
+            if self.optimizer_type == "multi_start":
                 return MultiStartOptimizer(**self.optimizer_params)
-            else:
-                raise ValueError(f"Unknown optimizer type: {self.optimizer_type}")
-        
+            raise ValueError(f"Unknown optimizer type: {self.optimizer_type}")
+
         def fit_surrogate(self, data):
             """Train the surrogate model on the given data."""
             if isinstance(data, dict):
                 from ..models.base import Dataset
                 data = Dataset(X=data["X"], y=data["y"])
-            
+
             self.surrogate.fit(data)
             self.is_fitted = True
             self.training_data = data
             return self
-        
+
         def optimize(self, initial_point: Array, bounds=None):
             """Optimize using the trained surrogate."""
             if not self.is_fitted:
                 raise ValueError("Surrogate model must be fitted before optimization")
-            
+
             # Simple gradient descent optimization
             result = self.optimizer.optimize(
                 surrogate=self.surrogate,
                 x0=initial_point,
                 bounds=bounds
             )
-            return result.x if hasattr(result, 'x') else result
-        
+            return result.x if hasattr(result, "x") else result
+
         def predict(self, x: Array) -> Array:
             """Predict function values using the trained surrogate."""
             if not self.is_fitted:
                 raise ValueError("Surrogate must be trained before prediction")
             return self.surrogate.predict(x)
-        
+
         def get_training_info(self) -> Dict[str, Any]:
             """Get information about the training process."""
             if not self.is_fitted:
                 return {"is_fitted": False}
-            
+
             info = {
                 "is_fitted": True,
                 "surrogate_type": self.surrogate_type,
@@ -116,7 +115,7 @@ try:
                 "has_gradients": self.training_data.gradients is not None if self.training_data else False,
             }
             return info
-    
+
     def quick_optimize(
         function: Callable[[Array], float],
         bounds: List[Tuple[float, float]],
@@ -128,7 +127,7 @@ try:
         """Quick optimization workflow with default settings."""
         if verbose:
             print("Collecting training data...")
-        
+
         data = collect_data(
             function=function,
             n_samples=n_samples,
@@ -136,22 +135,22 @@ try:
             sampling="sobol",
             verbose=verbose,
         )
-        
+
         if verbose:
             print("Creating surrogate optimizer...")
-        
+
         optimizer = SurrogateOptimizer(surrogate_type=surrogate_type)
         optimizer.fit_surrogate(data)
-        
+
         # Generate initial point if not provided
         if initial_point is None:
             initial_point = jnp.array([(lower + upper) / 2 for lower, upper in bounds])
-        
+
         if verbose:
             print("Starting optimization...")
-        
+
         result = optimizer.optimize(initial_point=initial_point, bounds=bounds)
-        
+
         return OptimizationResult(
             x=result,
             fun=function(result),
@@ -164,40 +163,40 @@ try:
 except ImportError as e:
     print(f"Warning: Could not import SurrogateOptimizer dependencies: {e}")
     SurrogateOptimizer = None
-    
+
     def quick_optimize(*args, **kwargs):
         raise ImportError("SurrogateOptimizer dependencies not available")
 
 from .enhanced_optimizer import EnhancedSurrogateOptimizer
 from .error_handling import (
-    SurrogateOptimizationError,
+    ConfigurationError,
     DataValidationError,
     ModelTrainingError,
-    OptimizationError,
     NumericalStabilityError,
-    ConfigurationError,
+    OptimizationError,
+    SurrogateOptimizationError,
+    check_numerical_stability,
+    error_boundary,
+    robust_function_call,
     validate_array_input,
     validate_bounds,
     validate_dataset,
-    check_numerical_stability,
-    robust_function_call,
-    error_boundary,
 )
 
 __all__ = [
-    "SurrogateOptimizer",
-    "quick_optimize",
-    "EnhancedSurrogateOptimizer",
-    "SurrogateOptimizationError",
-    "DataValidationError", 
-    "ModelTrainingError",
-    "OptimizationError",
-    "NumericalStabilityError",
     "ConfigurationError",
+    "DataValidationError",
+    "EnhancedSurrogateOptimizer",
+    "ModelTrainingError",
+    "NumericalStabilityError",
+    "OptimizationError",
+    "SurrogateOptimizationError",
+    "SurrogateOptimizer",
+    "check_numerical_stability",
+    "error_boundary",
+    "quick_optimize",
+    "robust_function_call",
     "validate_array_input",
     "validate_bounds",
     "validate_dataset",
-    "check_numerical_stability",
-    "robust_function_call",
-    "error_boundary",
 ]

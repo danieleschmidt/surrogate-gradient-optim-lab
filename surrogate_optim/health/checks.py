@@ -1,15 +1,13 @@
 """Health check implementations for system monitoring."""
 
-import time
-from enum import Enum
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
+from enum import Enum
 import logging
+import time
+from typing import Any, Dict, List, Optional
 
 import jax
 import jax.numpy as jnp
-import numpy as np
-from jax import random
 
 logger = logging.getLogger(__name__)
 
@@ -127,7 +125,7 @@ class HealthChecker:
             result = HealthCheckResult(
                 name=name,
                 status=HealthStatus.UNHEALTHY,
-                message=f"Check failed: {str(e)}",
+                message=f"Check failed: {e!s}",
                 duration_ms=(time.time() - start_time) * 1000,
             )
 
@@ -166,34 +164,33 @@ class HealthChecker:
 
         if all(status == HealthStatus.HEALTHY for status in statuses):
             return HealthStatus.HEALTHY
-        elif any(status == HealthStatus.UNHEALTHY for status in statuses):
+        if any(status == HealthStatus.UNHEALTHY for status in statuses):
             return HealthStatus.UNHEALTHY
-        else:
-            return HealthStatus.DEGRADED
+        return HealthStatus.DEGRADED
 
     # Default health checks
     def _check_jax_availability(self) -> HealthCheckResult:
         """Check if JAX is available and properly configured."""
         start_time = time.time()
-        
+
         try:
             # Check JAX import
             import jax
             import jax.numpy as jnp
-            
+
             # Check JAX devices
             devices = jax.devices()
             device_info = [{"type": str(device.device_kind), "id": device.id} for device in devices]
-            
+
             # Check if JAX can perform basic operations
             x = jnp.array([1.0, 2.0, 3.0])
             y = jnp.sum(x)
-            
+
             if not jnp.isfinite(y):
                 raise ValueError("JAX computation returned non-finite result")
-            
+
             duration_ms = (time.time() - start_time) * 1000
-            
+
             return HealthCheckResult(
                 name="jax_availability",
                 status=HealthStatus.HEALTHY,
@@ -205,44 +202,44 @@ class HealthChecker:
                     "computation_result": float(y),
                 }
             )
-            
+
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
             return HealthCheckResult(
                 name="jax_availability",
                 status=HealthStatus.UNHEALTHY,
-                message=f"JAX check failed: {str(e)}",
+                message=f"JAX check failed: {e!s}",
                 duration_ms=duration_ms,
             )
 
     def _check_jax_computation(self) -> HealthCheckResult:
         """Check if JAX can perform gradient computations."""
         start_time = time.time()
-        
+
         try:
             # Test basic gradient computation
             def test_function(x):
                 return jnp.sum(x**2)
-            
+
             grad_fn = jax.grad(test_function)
             x = jnp.array([1.0, 2.0, 3.0])
             gradient = grad_fn(x)
-            
+
             # Expected gradient: 2*x
             expected = 2.0 * x
-            
+
             if not jnp.allclose(gradient, expected, rtol=1e-6):
                 raise ValueError("Gradient computation is inaccurate")
-            
+
             # Test JIT compilation
             jit_grad_fn = jax.jit(grad_fn)
             jit_gradient = jit_grad_fn(x)
-            
+
             if not jnp.allclose(gradient, jit_gradient):
                 raise ValueError("JIT compilation produces different results")
-            
+
             duration_ms = (time.time() - start_time) * 1000
-            
+
             return HealthCheckResult(
                 name="jax_computation",
                 status=HealthStatus.HEALTHY,
@@ -255,38 +252,39 @@ class HealthChecker:
                     "computed_gradient": gradient.tolist(),
                 }
             )
-            
+
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
             return HealthCheckResult(
                 name="jax_computation",
                 status=HealthStatus.UNHEALTHY,
-                message=f"JAX computation check failed: {str(e)}",
+                message=f"JAX computation check failed: {e!s}",
                 duration_ms=duration_ms,
             )
 
     def _check_memory_usage(self) -> HealthCheckResult:
         """Check system memory usage."""
         start_time = time.time()
-        
+
         try:
-            import psutil
             import os
-            
+
+            import psutil
+
             # Get process memory info
             process = psutil.Process(os.getpid())
             memory_info = process.memory_info()
             memory_percent = process.memory_percent()
-            
+
             # Get system memory info
             system_memory = psutil.virtual_memory()
-            
+
             # Define thresholds
             memory_warning_threshold = 80.0  # percent
             memory_critical_threshold = 95.0  # percent
-            
+
             duration_ms = (time.time() - start_time) * 1000
-            
+
             if memory_percent > memory_critical_threshold:
                 status = HealthStatus.UNHEALTHY
                 message = f"Critical memory usage: {memory_percent:.1f}%"
@@ -296,7 +294,7 @@ class HealthChecker:
             else:
                 status = HealthStatus.HEALTHY
                 message = f"Memory usage normal: {memory_percent:.1f}%"
-            
+
             return HealthCheckResult(
                 name="memory_usage",
                 status=status,
@@ -310,7 +308,7 @@ class HealthChecker:
                     "system_memory_percent": system_memory.percent,
                 }
             )
-            
+
         except ImportError:
             duration_ms = (time.time() - start_time) * 1000
             return HealthCheckResult(
@@ -324,14 +322,14 @@ class HealthChecker:
             return HealthCheckResult(
                 name="memory_usage",
                 status=HealthStatus.UNHEALTHY,
-                message=f"Memory check failed: {str(e)}",
+                message=f"Memory check failed: {e!s}",
                 duration_ms=duration_ms,
             )
 
     def _check_dependency_imports(self) -> HealthCheckResult:
         """Check if required dependencies can be imported."""
         start_time = time.time()
-        
+
         required_packages = [
             "numpy",
             "scipy",
@@ -345,17 +343,17 @@ class HealthChecker:
             "rich",
             "loguru",
         ]
-        
+
         optional_packages = [
             "psutil",
             "memory_profiler",
             "jupyter",
             "notebook",
         ]
-        
+
         results = {"required": {}, "optional": {}}
         failed_required = []
-        
+
         # Check required packages
         for package in required_packages:
             try:
@@ -364,7 +362,7 @@ class HealthChecker:
             except ImportError:
                 results["required"][package] = False
                 failed_required.append(package)
-        
+
         # Check optional packages
         for package in optional_packages:
             try:
@@ -372,9 +370,9 @@ class HealthChecker:
                 results["optional"][package] = True
             except ImportError:
                 results["optional"][package] = False
-        
+
         duration_ms = (time.time() - start_time) * 1000
-        
+
         if failed_required:
             return HealthCheckResult(
                 name="dependency_imports",
@@ -383,19 +381,18 @@ class HealthChecker:
                 duration_ms=duration_ms,
                 metadata=results,
             )
-        else:
-            optional_missing = sum(1 for available in results["optional"].values() if not available)
-            message = f"All required dependencies available"
-            if optional_missing > 0:
-                message += f", {optional_missing} optional dependencies missing"
-            
-            return HealthCheckResult(
-                name="dependency_imports",
-                status=HealthStatus.HEALTHY,
-                message=message,
-                duration_ms=duration_ms,
-                metadata=results,
-            )
+        optional_missing = sum(1 for available in results["optional"].values() if not available)
+        message = "All required dependencies available"
+        if optional_missing > 0:
+            message += f", {optional_missing} optional dependencies missing"
+
+        return HealthCheckResult(
+            name="dependency_imports",
+            status=HealthStatus.HEALTHY,
+            message=message,
+            duration_ms=duration_ms,
+            metadata=results,
+        )
 
 
 # Convenience function for quick health checks

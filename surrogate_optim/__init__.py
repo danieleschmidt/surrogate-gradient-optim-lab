@@ -11,12 +11,13 @@ __email__ = "team@terragon-labs.com"
 VERSION = __version__
 
 # Core imports
+# Main interface classes
+from .core import SurrogateOptimizer as CoreSurrogateOptimizer
+from .core import quick_optimize
+from .data import *
 from .models import *
 from .optimizers import *
-from .data import *
 
-# Main interface classes  
-from .core import SurrogateOptimizer as CoreSurrogateOptimizer, quick_optimize
 # Import the full version from core.py which has all methods
 SurrogateOptimizer = CoreSurrogateOptimizer
 
@@ -29,7 +30,7 @@ __all__ = [
     "EnhancedSurrogateOptimizer",
     # Models
     "Surrogate",
-    "Dataset", 
+    "Dataset",
     "NeuralSurrogate",
     "GPSurrogate",
     "RandomForestSurrogate",

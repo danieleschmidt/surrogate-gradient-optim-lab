@@ -1,14 +1,11 @@
 """Global deployment and multi-region support for self-healing optimization."""
 
-import time
-import json
-import threading
-from typing import Dict, List, Optional, Callable, Any, Union
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
 import locale
-import os
+import threading
+import time
+from typing import Any, Dict, List, Optional
 
 from loguru import logger
 
@@ -68,13 +65,13 @@ class GlobalConfig:
 
 class LocalizationManager:
     """Manages internationalization and localization."""
-    
+
     def __init__(self, default_locale: str = "en_US"):
         self.default_locale = default_locale
         self.current_locale = default_locale
         self._translations: Dict[str, Dict[str, str]] = {}
         self._load_translations()
-        
+
     def _load_translations(self) -> None:
         """Load translation files."""
         # Define translations for supported languages
@@ -152,7 +149,7 @@ class LocalizationManager:
                 "disk_space_low": "磁盘空间不足"
             }
         }
-        
+
     def set_locale(self, locale_code: str) -> None:
         """Set the current locale."""
         if locale_code in self._translations:
@@ -161,25 +158,25 @@ class LocalizationManager:
         else:
             logger.warning(f"Locale {locale_code} not supported, using default {self.default_locale}")
             self.current_locale = self.default_locale
-            
+
     def translate(self, key: str, **kwargs) -> str:
         """Translate a message key to the current locale."""
         translations = self._translations.get(self.current_locale, self._translations[self.default_locale])
         message = translations.get(key, key)
-        
+
         # Support for string formatting
         if kwargs:
             try:
                 message = message.format(**kwargs)
             except (KeyError, ValueError) as e:
                 logger.warning(f"Translation formatting error for key '{key}': {e}")
-                
+
         return message
-        
+
     def get_supported_locales(self) -> List[str]:
         """Get list of supported locales."""
         return list(self._translations.keys())
-        
+
     def detect_system_locale(self) -> str:
         """Detect system locale."""
         try:
@@ -194,13 +191,13 @@ class LocalizationManager:
                     "ja_JP": "ja_JP",
                     "zh_CN": "zh_CN"
                 }
-                
+
                 for sys_locale, our_locale in locale_mapping.items():
                     if system_locale.startswith(sys_locale[:2]):
                         return our_locale
-                        
+
             return self.default_locale
-            
+
         except Exception as e:
             logger.warning(f"Failed to detect system locale: {e}")
             return self.default_locale
@@ -208,11 +205,11 @@ class LocalizationManager:
 
 class ComplianceManager:
     """Manages compliance with various data protection regulations."""
-    
+
     def __init__(self):
         self.enabled_standards: List[ComplianceStandard] = []
         self._compliance_rules = self._initialize_compliance_rules()
-        
+
     def _initialize_compliance_rules(self) -> Dict[ComplianceStandard, Dict[str, Any]]:
         """Initialize compliance rules for each standard."""
         return {
@@ -274,66 +271,65 @@ class ComplianceManager:
                 "transmission_security": True
             }
         }
-        
+
     def enable_compliance(self, standard: ComplianceStandard) -> None:
         """Enable compliance with a specific standard."""
         if standard not in self.enabled_standards:
             self.enabled_standards.append(standard)
             logger.info(f"Enabled compliance with {standard.value}")
-            
+
     def check_compliance(self, data_operation: str, data_classification: DataClassification) -> bool:
         """Check if an operation complies with enabled standards."""
         for standard in self.enabled_standards:
             rules = self._compliance_rules[standard]
-            
+
             if not self._validate_operation_compliance(data_operation, data_classification, rules):
                 logger.warning(f"Operation '{data_operation}' does not comply with {standard.value}")
                 return False
-                
+
         return True
-        
+
     def _validate_operation_compliance(
-        self, 
-        operation: str, 
-        classification: DataClassification, 
+        self,
+        operation: str,
+        classification: DataClassification,
         rules: Dict[str, Any]
     ) -> bool:
         """Validate operation against compliance rules."""
-        
         # Check encryption requirements
         if rules.get("encryption_required", False) and classification in [DataClassification.CONFIDENTIAL, DataClassification.RESTRICTED]:
             # Assume encryption is handled elsewhere
             pass
-            
+
         # Check access control requirements
         if rules.get("access_controls", False) and classification in [DataClassification.CONFIDENTIAL, DataClassification.RESTRICTED]:
             # Assume access controls are handled elsewhere
             pass
-            
+
         # Check audit logging requirements
         if rules.get("audit_logging", False):
             # Assume audit logging is handled elsewhere
             pass
-            
+
         return True
-        
+
     def get_data_retention_period(self, classification: DataClassification) -> int:
         """Get data retention period based on compliance requirements."""
         max_retention = 0
-        
+
         for standard in self.enabled_standards:
             rules = self._compliance_rules[standard]
             retention = rules.get("data_retention_days", 365)
             max_retention = max(max_retention, retention)
-            
+
         # Adjust based on data classification
         if classification == DataClassification.RESTRICTED:
             max_retention = min(max_retention, 90)  # Shorter retention for restricted data
         elif classification == DataClassification.CONFIDENTIAL:
             max_retention = min(max_retention, 180)
-            
+
         return max_retention or 365  # Default to 1 year
-        
+
     def generate_compliance_report(self) -> Dict[str, Any]:
         """Generate compliance status report."""
         return {
@@ -348,7 +344,7 @@ class ComplianceManager:
 
 class RegionManager:
     """Manages multi-region deployment and failover."""
-    
+
     def __init__(self, global_config: GlobalConfig):
         self.config = global_config
         self.regions: Dict[Region, RegionConfig] = {}
@@ -356,77 +352,77 @@ class RegionManager:
         self._health_status: Dict[Region, bool] = {}
         self._health_check_thread: Optional[threading.Thread] = None
         self._monitoring_active = False
-        
+
     def register_region(self, region_config: RegionConfig) -> None:
         """Register a new region."""
         self.regions[region_config.region] = region_config
         self._health_status[region_config.region] = True
         logger.info(f"Registered region {region_config.region.value}")
-        
+
     def start_health_monitoring(self) -> None:
         """Start health monitoring for all regions."""
         if self._monitoring_active:
             return
-            
+
         self._monitoring_active = True
         self._health_check_thread = threading.Thread(target=self._health_check_loop, daemon=True)
         self._health_check_thread.start()
         logger.info("Started multi-region health monitoring")
-        
+
     def stop_health_monitoring(self) -> None:
         """Stop health monitoring."""
         self._monitoring_active = False
         if self._health_check_thread:
             self._health_check_thread.join(timeout=5.0)
         logger.info("Stopped multi-region health monitoring")
-        
+
     def _health_check_loop(self) -> None:
         """Health check monitoring loop."""
-        consecutive_failures = {region: 0 for region in self.regions}
-        
+        consecutive_failures = dict.fromkeys(self.regions, 0)
+
         while self._monitoring_active:
             for region, config in self.regions.items():
                 try:
                     # Simulate health check (in real implementation, would check actual endpoints)
                     is_healthy = self._check_region_health(config)
-                    
+
                     if is_healthy:
                         consecutive_failures[region] = 0
                         self._health_status[region] = True
                     else:
                         consecutive_failures[region] += 1
-                        
+
                         if consecutive_failures[region] >= self.config.failover_threshold:
                             self._health_status[region] = False
                             logger.warning(f"Region {region.value} marked as unhealthy")
-                            
+
                             # Trigger failover if current region failed
                             if region == self.current_region and self.config.enable_auto_failover:
                                 self._initiate_failover()
-                                
+
                 except Exception as e:
                     logger.error(f"Health check failed for region {region.value}: {e}")
                     consecutive_failures[region] += 1
-                    
+
             time.sleep(self.config.health_check_interval)
-            
+
     def _check_region_health(self, region_config: RegionConfig) -> bool:
         """Check health of a specific region."""
         # Simulate health check - in real implementation would ping endpoints
         # For now, assume all regions are healthy unless explicitly marked otherwise
         return True
-        
+
     def _initiate_failover(self) -> None:
         """Initiate failover to a healthy region."""
         healthy_regions = [
             region for region, is_healthy in self._health_status.items()
             if is_healthy and region != self.current_region
         ]
-        
+
         if not healthy_regions:
             logger.critical("No healthy regions available for failover!")
             return
-            
+
         # Select best failover region
         if self.config.failover_regions:
             # Prefer configured failover regions
@@ -438,21 +434,21 @@ class RegionManager:
                 new_region = healthy_regions[0]
         else:
             new_region = healthy_regions[0]
-            
+
         logger.warning(f"Initiating failover from {self.current_region.value} to {new_region.value}")
         self.current_region = new_region
-        
+
     def get_optimal_region(self, user_location: Optional[str] = None) -> Region:
         """Get optimal region for a user based on location and health."""
         healthy_regions = [
             region for region, is_healthy in self._health_status.items()
             if is_healthy
         ]
-        
+
         if not healthy_regions:
             logger.warning("No healthy regions available, using primary region")
             return self.config.primary_region
-            
+
         # Simple location-based routing
         if user_location:
             location_preferences = {
@@ -460,32 +456,31 @@ class RegionManager:
                 "EU": [Region.EU_WEST_1, Region.EU_CENTRAL_1],
                 "AP": [Region.AP_SOUTHEAST_1, Region.AP_NORTHEAST_1],
             }
-            
+
             for location_code, preferred_regions in location_preferences.items():
                 if user_location.startswith(location_code):
                     for preferred in preferred_regions:
                         if preferred in healthy_regions:
                             return preferred
-                            
+
         # Fallback to load balancing strategy
         if self.config.load_balancing_strategy == "round_robin":
             # Simple round-robin (would need state tracking in real implementation)
             return healthy_regions[0]
-        elif self.config.load_balancing_strategy == "latency_based":
+        if self.config.load_balancing_strategy == "latency_based":
             # Return region with lowest latency
             return min(
                 healthy_regions,
                 key=lambda r: self.regions[r].latency_ms
             )
-        elif self.config.load_balancing_strategy == "capacity_based":
+        if self.config.load_balancing_strategy == "capacity_based":
             # Return region with highest available capacity
             return max(
                 healthy_regions,
                 key=lambda r: self.regions[r].capacity_limit
             )
-        else:
-            return healthy_regions[0]
-            
+        return healthy_regions[0]
+
     def get_region_status(self) -> Dict[str, Any]:
         """Get status of all regions."""
         return {
@@ -506,24 +501,24 @@ class RegionManager:
 
 class GlobalDeploymentManager:
     """Main global deployment orchestrator."""
-    
+
     def __init__(self, global_config: Optional[GlobalConfig] = None):
         self.config = global_config or GlobalConfig()
-        
+
         # Initialize components
         self.localization = LocalizationManager()
         self.compliance = ComplianceManager()
         self.region_manager = RegionManager(self.config)
-        
+
         # Auto-detect and set locale
         detected_locale = self.localization.detect_system_locale()
         self.localization.set_locale(detected_locale)
-        
+
         logger.info(f"Global deployment manager initialized for region {self.config.primary_region.value}")
-        
+
     def configure_region(
-        self, 
-        region: Region, 
+        self,
+        region: Region,
         endpoint_url: str,
         compliance_standards: Optional[List[ComplianceStandard]] = None,
         **kwargs
@@ -535,44 +530,44 @@ class GlobalDeploymentManager:
             compliance_standards=compliance_standards or [],
             **kwargs
         )
-        
+
         self.region_manager.register_region(region_config)
-        
+
         # Enable compliance standards for this region
         for standard in region_config.compliance_standards:
             self.compliance.enable_compliance(standard)
-            
+
     def deploy_to_region(self, region: Region, deployment_config: Dict[str, Any]) -> bool:
         """Deploy to a specific region."""
         try:
             logger.info(self.localization.translate("optimization_started"))
-            
+
             # Check compliance before deployment
             if not self.compliance.check_compliance("deployment", DataClassification.INTERNAL):
                 logger.error("Deployment failed compliance check")
                 return False
-                
+
             # Simulate deployment process
             logger.info(f"Deploying to region {region.value}")
             time.sleep(1)  # Simulate deployment time
-            
+
             logger.info(self.localization.translate("optimization_completed"))
             return True
-            
+
         except Exception as e:
             logger.error(self.localization.translate("error_occurred") + f": {e}")
             return False
-            
+
     def start_global_monitoring(self) -> None:
         """Start global monitoring and health checks."""
         self.region_manager.start_health_monitoring()
         logger.info("Global monitoring started")
-        
+
     def stop_global_monitoring(self) -> None:
         """Stop global monitoring."""
         self.region_manager.stop_health_monitoring()
         logger.info("Global monitoring stopped")
-        
+
     def get_deployment_status(self) -> Dict[str, Any]:
         """Get comprehensive deployment status."""
         return {
@@ -588,15 +583,15 @@ class GlobalDeploymentManager:
             "compliance": self.compliance.generate_compliance_report(),
             "regions": self.region_manager.get_region_status()
         }
-        
+
     def localized_message(self, key: str, **kwargs) -> str:
         """Get localized message."""
         return self.localization.translate(key, **kwargs)
-        
+
     def ensure_compliance(self, operation: str, data_classification: DataClassification) -> bool:
         """Ensure operation complies with all enabled standards."""
         return self.compliance.check_compliance(operation, data_classification)
-        
+
     def get_optimal_region_for_user(self, user_location: Optional[str] = None) -> Region:
         """Get optimal region for a user."""
         return self.region_manager.get_optimal_region(user_location)
@@ -617,7 +612,7 @@ def configure_global_deployment(
         enable_multi_region=enable_multi_region,
         enable_auto_failover=enable_auto_failover
     )
-    
+
     global global_deployment_manager
     global_deployment_manager = GlobalDeploymentManager(config)
 

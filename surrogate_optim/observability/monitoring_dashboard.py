@@ -1,23 +1,18 @@
 """Advanced monitoring dashboard for surrogate optimization systems."""
 
-import asyncio
-import json
-import time
-import threading
-import warnings
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
-from dataclasses import dataclass, asdict
-from enum import Enum
 from collections import defaultdict, deque
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from enum import Enum
 import logging
+import threading
+import time
+from typing import Any, Dict, List, Optional, Tuple
 
-import jax.numpy as jnp
 import numpy as np
 
-from .prometheus_metrics import get_global_metrics, PROMETHEUS_AVAILABLE
+from .prometheus_metrics import PROMETHEUS_AVAILABLE, get_global_metrics
 from .tracing import get_tracer
-
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +58,7 @@ class MetricSnapshot:
 
 class MetricAggregator:
     """Aggregates and analyzes metrics over time windows."""
-    
+
     def __init__(self, window_size: int = 1000):
         """Initialize metric aggregator.
         
@@ -73,35 +68,35 @@ class MetricAggregator:
         self.window_size = window_size
         self.metrics_history: Dict[str, deque] = defaultdict(lambda: deque(maxlen=window_size))
         self.lock = threading.Lock()
-    
+
     def add_metric(self, name: str, value: float, timestamp: Optional[datetime] = None):
         """Add a metric value."""
         if timestamp is None:
             timestamp = datetime.now()
-        
+
         with self.lock:
             self.metrics_history[name].append((timestamp, value))
-    
+
     def get_recent_values(self, name: str, duration_minutes: int = 10) -> List[Tuple[datetime, float]]:
         """Get recent values for a metric."""
         cutoff_time = datetime.now() - timedelta(minutes=duration_minutes)
-        
+
         with self.lock:
             if name not in self.metrics_history:
                 return []
-            
+
             return [(ts, val) for ts, val in self.metrics_history[name] if ts >= cutoff_time]
-    
+
     def calculate_statistics(self, name: str, duration_minutes: int = 10) -> Dict[str, float]:
         """Calculate statistics for a metric over a time window."""
         recent_values = self.get_recent_values(name, duration_minutes)
-        
+
         if not recent_values:
             return {"count": 0}
-        
+
         values = [val for _, val in recent_values]
         values_array = np.array(values)
-        
+
         return {
             "count": len(values),
             "mean": float(np.mean(values_array)),
@@ -112,35 +107,35 @@ class MetricAggregator:
             "p95": float(np.percentile(values_array, 95)),
             "p99": float(np.percentile(values_array, 99)),
         }
-    
+
     def detect_anomalies(self, name: str, z_threshold: float = 3.0, duration_minutes: int = 60) -> List[Tuple[datetime, float]]:
         """Detect anomalies using z-score analysis."""
         recent_values = self.get_recent_values(name, duration_minutes)
-        
+
         if len(recent_values) < 10:  # Need minimum data points
             return []
-        
+
         values = [val for _, val in recent_values]
         values_array = np.array(values)
-        
+
         mean_val = np.mean(values_array)
         std_val = np.std(values_array)
-        
+
         if std_val == 0:  # No variation
             return []
-        
+
         anomalies = []
         for ts, val in recent_values:
             z_score = abs(val - mean_val) / std_val
             if z_score > z_threshold:
                 anomalies.append((ts, val))
-        
+
         return anomalies
 
 
 class AlertManager:
     """Manages alerts and notifications for monitoring."""
-    
+
     def __init__(self):
         """Initialize alert manager."""
         self.alerts: Dict[str, Alert] = {}
@@ -148,10 +143,10 @@ class AlertManager:
         self.alert_history: deque = deque(maxlen=10000)
         self.lock = threading.Lock()
         self.notification_callbacks = []
-        
+
         # Load default alert rules
         self._initialize_default_rules()
-    
+
     def _initialize_default_rules(self):
         """Initialize default alert rules for surrogate optimization."""
         default_rules = [
@@ -212,10 +207,10 @@ class AlertManager:
                 "invert": True,
             },
         ]
-        
+
         for rule in default_rules:
             self.add_alert_rule(**rule)
-    
+
     def add_alert_rule(
         self,
         name: str,
@@ -252,22 +247,22 @@ class AlertManager:
             "labels_filter": labels_filter or {},
             "invert": invert,
         }
-        
+
         with self.lock:
             # Remove existing rule with same name
             self.alert_rules = [r for r in self.alert_rules if r["name"] != name]
             self.alert_rules.append(rule)
-    
+
     def evaluate_rules(self, aggregator: MetricAggregator):
         """Evaluate all alert rules against current metrics."""
         current_time = datetime.now()
-        
+
         for rule in self.alert_rules:
             try:
                 self._evaluate_single_rule(rule, aggregator, current_time)
             except Exception as e:
                 logger.error(f"Error evaluating alert rule {rule['name']}: {e}")
-    
+
     def _evaluate_single_rule(self, rule: Dict[str, Any], aggregator: MetricAggregator, current_time: datetime):
         """Evaluate a single alert rule."""
         metric_name = rule["metric"]
@@ -275,33 +270,33 @@ class AlertManager:
         threshold = rule["threshold"]
         duration_minutes = rule["duration_minutes"]
         invert = rule.get("invert", False)
-        
+
         # Get metric statistics
         stats = aggregator.calculate_statistics(metric_name, duration_minutes)
-        
+
         if stats["count"] == 0:
             return  # No data available
-        
+
         # Evaluate condition
         if condition in stats:
             current_value = stats[condition]
         else:
             logger.warning(f"Unknown condition '{condition}' for rule '{rule['name']}'")
             return
-        
+
         # Check threshold
         if invert:
             triggered = current_value < threshold
         else:
             triggered = current_value > threshold
-        
+
         alert_id = f"{rule['name']}_{metric_name}"
-        
+
         if triggered:
             self._trigger_alert(rule, alert_id, current_value, current_time)
         else:
             self._resolve_alert(alert_id, current_time)
-    
+
     def _trigger_alert(self, rule: Dict[str, Any], alert_id: str, current_value: float, current_time: datetime):
         """Trigger an alert."""
         with self.lock:
@@ -309,7 +304,7 @@ class AlertManager:
                 # Alert already active, just update current value
                 self.alerts[alert_id].current_value = current_value
                 return
-            
+
             alert = Alert(
                 id=alert_id,
                 name=rule["name"],
@@ -322,19 +317,19 @@ class AlertManager:
                 current_value=current_value,
                 labels=rule.get("labels_filter", {}),
             )
-            
+
             self.alerts[alert_id] = alert
             self.alert_history.append(alert)
-            
+
             # Notify callbacks
             for callback in self.notification_callbacks:
                 try:
                     callback(alert)
                 except Exception as e:
                     logger.error(f"Error in alert notification callback: {e}")
-            
+
             logger.warning(f"ALERT TRIGGERED: {alert.name} - {alert.description} (value: {current_value:.3f}, threshold: {rule['threshold']:.3f})")
-    
+
     def _resolve_alert(self, alert_id: str, current_time: datetime):
         """Resolve an alert."""
         with self.lock:
@@ -342,19 +337,19 @@ class AlertManager:
                 alert = self.alerts[alert_id]
                 alert.status = AlertStatus.RESOLVED
                 alert.resolved_at = current_time
-                
+
                 logger.info(f"ALERT RESOLVED: {alert.name}")
-    
+
     def get_active_alerts(self) -> List[Alert]:
         """Get all active alerts."""
         with self.lock:
             return [alert for alert in self.alerts.values() if alert.status == AlertStatus.ACTIVE]
-    
+
     def get_alert_history(self, limit: int = 100) -> List[Alert]:
         """Get recent alert history."""
         with self.lock:
             return list(self.alert_history)[-limit:]
-    
+
     def suppress_alert(self, alert_id: str, duration_minutes: int = 60):
         """Suppress an alert for a specified duration."""
         with self.lock:
@@ -362,7 +357,7 @@ class AlertManager:
                 alert = self.alerts[alert_id]
                 alert.status = AlertStatus.SUPPRESSED
                 alert.suppressed_until = datetime.now() + timedelta(minutes=duration_minutes)
-    
+
     def add_notification_callback(self, callback):
         """Add a callback function for alert notifications."""
         self.notification_callbacks.append(callback)
@@ -370,7 +365,7 @@ class AlertManager:
 
 class MonitoringDashboard:
     """Comprehensive monitoring dashboard for surrogate optimization."""
-    
+
     def __init__(
         self,
         update_interval_seconds: int = 30,
@@ -387,17 +382,17 @@ class MonitoringDashboard:
         self.update_interval = update_interval_seconds
         self.enable_web_interface = enable_web_interface
         self.web_port = web_port
-        
+
         # Core components
         self.aggregator = MetricAggregator()
         self.alert_manager = AlertManager()
         self.tracer = get_tracer("monitoring_dashboard")
-        
+
         # State
         self.is_running = False
         self.monitoring_thread = None
         self.web_server = None
-        
+
         # Dashboard data
         self.dashboard_data = {
             "system_status": "unknown",
@@ -406,40 +401,40 @@ class MonitoringDashboard:
             "performance_trends": {},
             "health_checks": {},
         }
-        
+
         # Setup alert notifications
         self.alert_manager.add_notification_callback(self._handle_alert_notification)
-    
+
     def start(self):
         """Start the monitoring dashboard."""
         if self.is_running:
             logger.warning("Monitoring dashboard already running")
             return
-        
+
         self.is_running = True
-        
+
         # Start monitoring thread
         self.monitoring_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
         self.monitoring_thread.start()
-        
+
         # Start web interface if enabled
         if self.enable_web_interface:
             self._start_web_interface()
-        
+
         logger.info(f"Monitoring dashboard started (update interval: {self.update_interval}s)")
-    
+
     def stop(self):
         """Stop the monitoring dashboard."""
         self.is_running = False
-        
+
         if self.monitoring_thread:
             self.monitoring_thread.join(timeout=5)
-        
+
         if self.web_server:
             self._stop_web_interface()
-        
+
         logger.info("Monitoring dashboard stopped")
-    
+
     def _monitoring_loop(self):
         """Main monitoring loop."""
         while self.is_running:
@@ -448,46 +443,46 @@ class MonitoringDashboard:
                 self._evaluate_alerts()
                 self._update_dashboard_data()
                 self._run_health_checks()
-                
+
             except Exception as e:
                 logger.error(f"Error in monitoring loop: {e}")
-            
+
             time.sleep(self.update_interval)
-    
+
     def _update_metrics(self):
         """Update metrics from Prometheus."""
         if not PROMETHEUS_AVAILABLE:
             return
-        
+
         try:
             # Get current metrics from Prometheus
             metrics = get_global_metrics()
-            
+
             # Simulate metric collection (in real implementation, would query actual metrics)
             current_time = datetime.now()
-            
+
             # Add some sample metrics
             self.aggregator.add_metric("system_health", 1.0, current_time)
-            
+
             # In a real implementation, you would query actual Prometheus metrics here
-            
+
         except Exception as e:
             logger.error(f"Error updating metrics: {e}")
-    
+
     def _evaluate_alerts(self):
         """Evaluate alert rules."""
         try:
             self.alert_manager.evaluate_rules(self.aggregator)
         except Exception as e:
             logger.error(f"Error evaluating alerts: {e}")
-    
+
     def _update_dashboard_data(self):
         """Update dashboard data structure."""
         try:
             # Update active alerts
             active_alerts = self.alert_manager.get_active_alerts()
             self.dashboard_data["active_alerts"] = [asdict(alert) for alert in active_alerts]
-            
+
             # Update system status
             if any(alert.severity == AlertSeverity.CRITICAL for alert in active_alerts):
                 self.dashboard_data["system_status"] = "critical"
@@ -495,7 +490,7 @@ class MonitoringDashboard:
                 self.dashboard_data["system_status"] = "warning"
             else:
                 self.dashboard_data["system_status"] = "healthy"
-            
+
             # Update metric summaries
             key_metrics = [
                 "surrogate_training_duration_seconds",
@@ -504,35 +499,35 @@ class MonitoringDashboard:
                 "system_memory_usage_bytes",
                 "model_accuracy",
             ]
-            
+
             metric_summaries = {}
             for metric in key_metrics:
                 stats = self.aggregator.calculate_statistics(metric, duration_minutes=60)
                 if stats["count"] > 0:
                     metric_summaries[metric] = stats
-            
+
             self.dashboard_data["metric_summaries"] = metric_summaries
-            
+
         except Exception as e:
             logger.error(f"Error updating dashboard data: {e}")
-    
+
     def _run_health_checks(self):
         """Run system health checks."""
         health_checks = {}
-        
+
         try:
             # Check metric collection
             health_checks["metric_collection"] = {
                 "status": "healthy" if len(self.aggregator.metrics_history) > 0 else "unhealthy",
                 "details": f"{len(self.aggregator.metrics_history)} metrics tracked"
             }
-            
+
             # Check alert system
             health_checks["alert_system"] = {
                 "status": "healthy",
                 "details": f"{len(self.alert_manager.alert_rules)} rules configured"
             }
-            
+
             # Check memory usage
             try:
                 import psutil
@@ -547,26 +542,26 @@ class MonitoringDashboard:
                     "status": "unknown",
                     "details": "psutil not available"
                 }
-            
+
             # Check Prometheus metrics
             health_checks["prometheus_metrics"] = {
                 "status": "healthy" if PROMETHEUS_AVAILABLE else "unhealthy",
                 "details": "Prometheus client available" if PROMETHEUS_AVAILABLE else "Prometheus client not available"
             }
-            
+
             self.dashboard_data["health_checks"] = health_checks
-            
+
         except Exception as e:
             logger.error(f"Error running health checks: {e}")
-    
+
     def _handle_alert_notification(self, alert: Alert):
         """Handle alert notifications."""
         # Log alert
         severity_emoji = {"critical": "🚨", "warning": "⚠️", "info": "ℹ️"}
         emoji = severity_emoji.get(alert.severity.value, "")
-        
+
         logger.warning(f"{emoji} ALERT: {alert.name} - {alert.description} (value: {alert.current_value:.3f})")
-        
+
         # Add tracing span for alert
         with self.tracer.trace("alert_triggered") as span:
             span.set_attribute("alert.id", alert.id)
@@ -575,7 +570,7 @@ class MonitoringDashboard:
             span.set_attribute("alert.metric", alert.metric_name)
             span.set_attribute("alert.threshold", alert.threshold)
             span.set_attribute("alert.current_value", alert.current_value)
-    
+
     def _start_web_interface(self):
         """Start web interface for dashboard."""
         try:
@@ -585,43 +580,43 @@ class MonitoringDashboard:
             logger.info("Web interface implementation requires additional dependencies")
         except Exception as e:
             logger.error(f"Failed to start web interface: {e}")
-    
+
     def _stop_web_interface(self):
         """Stop web interface."""
         if self.web_server:
             logger.info("Stopping web interface")
-    
+
     def get_dashboard_data(self) -> Dict[str, Any]:
         """Get current dashboard data."""
         return self.dashboard_data.copy()
-    
+
     def get_metric_statistics(self, metric_name: str, duration_minutes: int = 60) -> Dict[str, float]:
         """Get statistics for a specific metric."""
         return self.aggregator.calculate_statistics(metric_name, duration_minutes)
-    
+
     def detect_metric_anomalies(self, metric_name: str, z_threshold: float = 3.0, duration_minutes: int = 60) -> List[Tuple[datetime, float]]:
         """Detect anomalies in a specific metric."""
         return self.aggregator.detect_anomalies(metric_name, z_threshold, duration_minutes)
-    
+
     def add_custom_alert_rule(self, **kwargs):
         """Add a custom alert rule."""
         self.alert_manager.add_alert_rule(**kwargs)
-    
+
     def suppress_alert(self, alert_id: str, duration_minutes: int = 60):
         """Suppress a specific alert."""
         self.alert_manager.suppress_alert(alert_id, duration_minutes)
-    
+
     def export_dashboard_report(self) -> str:
         """Export dashboard data as a formatted report."""
         data = self.get_dashboard_data()
-        
+
         report = []
         report.append("SURROGATE OPTIMIZATION MONITORING REPORT")
         report.append("=" * 50)
         report.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         report.append(f"System Status: {data['system_status'].upper()}")
         report.append("")
-        
+
         # Active alerts
         active_alerts = data["active_alerts"]
         if active_alerts:
@@ -634,7 +629,7 @@ class MonitoringDashboard:
         else:
             report.append("ACTIVE ALERTS: None")
             report.append("")
-        
+
         # Health checks
         health_checks = data["health_checks"]
         if health_checks:
@@ -645,7 +640,7 @@ class MonitoringDashboard:
                 emoji = status_emoji.get(check_data["status"], "")
                 report.append(f"{emoji} {check_name}: {check_data['status']} - {check_data['details']}")
             report.append("")
-        
+
         # Metric summaries
         metric_summaries = data["metric_summaries"]
         if metric_summaries:
@@ -656,7 +651,7 @@ class MonitoringDashboard:
                 report.append(f"  Mean: {stats['mean']:.3f}, P95: {stats['p95']:.3f}, Max: {stats['max']:.3f}")
                 report.append(f"  Count: {stats['count']}, Std: {stats['std']:.3f}")
                 report.append("")
-        
+
         return "\n".join(report)
 
 

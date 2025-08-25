@@ -2,10 +2,10 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-import jax.numpy as jnp
 from jax import Array
+import jax.numpy as jnp
 
 from ..models.base import Surrogate
 
@@ -34,7 +34,7 @@ class OptimizationResult:
     trajectory: Optional[List[Array]] = None
     convergence_history: Optional[List[float]] = None
     metadata: Dict[str, Any] = None
-    
+
     def __post_init__(self):
         if self.metadata is None:
             self.metadata = {}
@@ -42,7 +42,7 @@ class OptimizationResult:
 
 class BaseOptimizer(ABC):
     """Abstract base class for optimization algorithms."""
-    
+
     def __init__(
         self,
         max_iterations: int = 100,
@@ -59,12 +59,12 @@ class BaseOptimizer(ABC):
         self.max_iterations = max_iterations
         self.tolerance = tolerance
         self.verbose = verbose
-        
+
         # Optimization state
         self.current_iteration = 0
         self.trajectory = []
         self.convergence_history = []
-    
+
     @abstractmethod
     def optimize(
         self,
@@ -85,7 +85,7 @@ class BaseOptimizer(ABC):
             Optimization result
         """
         pass
-    
+
     def _check_convergence(
         self,
         x_current: Array,
@@ -108,14 +108,14 @@ class BaseOptimizer(ABC):
         f_change = abs(f_current - f_previous)
         if f_change < self.tolerance:
             return True
-        
+
         # Check parameter change
         x_change = float(jnp.linalg.norm(x_current - x_previous))
         if x_change < self.tolerance:
             return True
-        
+
         return False
-    
+
     def _update_history(self, x: Array, f_val: float):
         """Update optimization history.
         
@@ -125,17 +125,17 @@ class BaseOptimizer(ABC):
         """
         self.trajectory.append(x.copy())
         self.convergence_history.append(f_val)
-        
+
         if self.verbose:
             print(f"Iteration {self.current_iteration:3d}: f = {f_val:.6f}, "
                   f"||x|| = {float(jnp.linalg.norm(x)):.6f}")
-    
+
     def _reset_state(self):
         """Reset optimizer state for new optimization run."""
         self.current_iteration = 0
         self.trajectory = []
         self.convergence_history = []
-    
+
     def _validate_inputs(
         self,
         surrogate: Surrogate,
@@ -152,23 +152,23 @@ class BaseOptimizer(ABC):
         Raises:
             ValueError: If inputs are invalid
         """
-        if not hasattr(surrogate, 'predict') or not hasattr(surrogate, 'gradient'):
+        if not hasattr(surrogate, "predict") or not hasattr(surrogate, "gradient"):
             raise ValueError("Surrogate must implement predict() and gradient() methods")
-        
+
         if x0.ndim != 1:
             raise ValueError("Initial point x0 must be 1-dimensional")
-        
+
         if bounds is not None:
             if len(bounds) != len(x0):
                 raise ValueError(f"Bounds length {len(bounds)} must match x0 length {len(x0)}")
-            
+
             for i, (lower, upper) in enumerate(bounds):
                 if lower >= upper:
                     raise ValueError(f"Invalid bounds at dimension {i}: lower={lower} >= upper={upper}")
-                
+
                 if not (lower <= x0[i] <= upper):
                     raise ValueError(f"Initial point x0[{i}]={x0[i]} violates bounds [{lower}, {upper}]")
-    
+
     def _project_to_bounds(self, x: Array, bounds: Optional[List[Tuple[float, float]]]) -> Array:
         """Project point to feasible region defined by bounds.
         
@@ -181,9 +181,9 @@ class BaseOptimizer(ABC):
         """
         if bounds is None:
             return x
-        
+
         x_proj = x.copy()
         for i, (lower, upper) in enumerate(bounds):
             x_proj = x_proj.at[i].set(jnp.clip(x_proj[i], lower, upper))
-        
+
         return x_proj

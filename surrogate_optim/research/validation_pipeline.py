@@ -1,29 +1,29 @@
 """Comprehensive research validation pipeline for novel optimization algorithms."""
 
-import time
-import json
-import asyncio
-from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union, Callable
-from dataclasses import dataclass, asdict
-from enum import Enum
 from concurrent.futures import ProcessPoolExecutor, as_completed
-import logging
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from enum import Enum
+import json
+from pathlib import Path
+import time
+from typing import Any, Dict, List, Optional, Tuple
 
-import jax
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
 from scipy import stats
 
 from ..benchmarks import BenchmarkSuite
-from ..quality.statistical_validation import StatisticalValidator
-from ..observability.tracing import get_tracer
 from ..monitoring.enhanced_logging import get_logger
-from .novel_algorithms import PhysicsInformedSurrogate, AdaptiveAcquisitionOptimizer, MultiObjectiveSurrogateOptimizer, SequentialModelBasedOptimization
+from ..observability.tracing import get_tracer
+from ..quality.statistical_validation import StatisticalValidator
 from .experimental_suite import ExperimentalSuite
-
+from .novel_algorithms import (
+    AdaptiveAcquisitionOptimizer,
+    MultiObjectiveSurrogateOptimizer,
+    PhysicsInformedSurrogate,
+    SequentialModelBasedOptimization,
+)
 
 logger = get_logger()
 
@@ -120,7 +120,7 @@ class ComparativeAnalysis:
 
 class ResearchValidationPipeline:
     """Comprehensive validation pipeline for research algorithms."""
-    
+
     def __init__(
         self,
         output_dir: str = "validation_results",
@@ -138,20 +138,20 @@ class ResearchValidationPipeline:
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         self.enable_parallel = enable_parallel
         self.max_workers = max_workers
-        
+
         # Initialize components
         self.benchmark_suite = BenchmarkSuite()
         self.statistical_validator = StatisticalValidator()
         self.experimental_suite = ExperimentalSuite()
         self.tracer = get_tracer("research_validation")
-        
+
         # State management
         self.validation_history: List[Dict[str, Any]] = []
         self.current_validations: Dict[str, ValidationConfig] = {}
-        
+
         # Algorithm registry
         self.algorithm_registry = {
             "physics_informed": PhysicsInformedSurrogate,
@@ -159,14 +159,14 @@ class ResearchValidationPipeline:
             "multi_objective": MultiObjectiveSurrogateOptimizer,
             "sequential_mbo": SequentialModelBasedOptimization,
         }
-        
+
         logger.info(f"Research validation pipeline initialized (output: {self.output_dir})")
-    
+
     def register_algorithm(self, name: str, algorithm_class: type):
         """Register a new algorithm for validation."""
         self.algorithm_registry[name] = algorithm_class
         logger.info(f"Registered algorithm: {name}")
-    
+
     def create_validation_config(
         self,
         name: str,
@@ -197,13 +197,13 @@ class ResearchValidationPipeline:
         """
         if algorithms is None:
             algorithms = list(self.algorithm_registry.keys())
-        
+
         if benchmark_functions is None:
             benchmark_functions = ["rosenbrock", "rastrigin", "ackley", "griewank"]
-        
+
         if dimensions is None:
             dimensions = [2, 5, 10]
-        
+
         config = ValidationConfig(
             name=name,
             description=description,
@@ -221,9 +221,9 @@ class ResearchValidationPipeline:
             parallel_execution=kwargs.get("parallel_execution", self.enable_parallel),
             timeout_minutes=kwargs.get("timeout_minutes", 30),
         )
-        
+
         return config
-    
+
     def run_validation(self, config: ValidationConfig) -> Dict[str, Any]:
         """Run comprehensive validation study.
         
@@ -239,69 +239,69 @@ class ResearchValidationPipeline:
             span.set_attribute("validation.n_algorithms", len(config.algorithms_to_test))
             span.set_attribute("validation.n_benchmarks", len(config.benchmark_functions))
             span.set_attribute("validation.n_trials", config.n_trials)
-            
+
             logger.info(f"Starting validation study: {config.name}")
             start_time = time.time()
-            
+
             try:
                 # Phase 1: Execute experiments
                 logger.info("Phase 1: Executing experiments...")
                 raw_results = self._execute_experiments(config)
-                
+
                 # Phase 2: Statistical analysis
                 logger.info("Phase 2: Performing statistical analysis...")
                 statistical_results = self._perform_statistical_analysis(raw_results, config)
-                
+
                 # Phase 3: Comparative analysis
                 logger.info("Phase 3: Performing comparative analysis...")
                 comparative_results = self._perform_comparative_analysis(statistical_results, config)
-                
+
                 # Phase 4: Generate reports
                 logger.info("Phase 4: Generating reports...")
                 reports = self._generate_reports(raw_results, statistical_results, comparative_results, config)
-                
+
                 # Phase 5: Save results
                 logger.info("Phase 5: Saving results...")
                 self._save_results(raw_results, statistical_results, comparative_results, reports, config)
-                
+
                 execution_time = time.time() - start_time
-                
+
                 validation_summary = {
                     "config": asdict(config),
                     "execution_time": execution_time,
                     "total_experiments": len(raw_results),
                     "successful_experiments": sum(1 for r in raw_results if r.success),
-                    "statistical_analysis": {alg: len([s for s in statistical_results if s.algorithm == alg]) 
+                    "statistical_analysis": {alg: len([s for s in statistical_results if s.algorithm == alg])
                                            for alg in config.algorithms_to_test},
                     "comparative_analysis": len(comparative_results),
                     "reports_generated": list(reports.keys()),
                     "status": ValidationStatus.COMPLETED.value,
                     "timestamp": datetime.now().isoformat(),
                 }
-                
+
                 self.validation_history.append(validation_summary)
-                
+
                 logger.info(f"Validation study completed: {config.name} ({execution_time:.1f}s)")
                 return validation_summary
-                
+
             except Exception as e:
                 logger.error(f"Validation study failed: {config.name} - {e}")
                 span.set_status("error", str(e))
-                
+
                 failure_summary = {
                     "config": asdict(config),
                     "status": ValidationStatus.FAILED.value,
                     "error": str(e),
                     "timestamp": datetime.now().isoformat(),
                 }
-                
+
                 self.validation_history.append(failure_summary)
                 raise
-    
+
     def _execute_experiments(self, config: ValidationConfig) -> List[ValidationResult]:
         """Execute all experiments for the validation study."""
         experiment_tasks = []
-        
+
         # Generate all experiment combinations
         for algorithm in config.algorithms_to_test:
             for benchmark in config.benchmark_functions:
@@ -315,31 +315,31 @@ class ResearchValidationPipeline:
                             "config": config,
                         }
                         experiment_tasks.append(task)
-        
+
         logger.info(f"Executing {len(experiment_tasks)} experiments...")
-        
+
         results = []
-        
+
         if config.parallel_execution and self.enable_parallel:
             # Parallel execution
             with ProcessPoolExecutor(max_workers=self.max_workers) as executor:
                 future_to_task = {
-                    executor.submit(self._execute_single_experiment, task): task 
+                    executor.submit(self._execute_single_experiment, task): task
                     for task in experiment_tasks
                 }
-                
+
                 for future in as_completed(future_to_task, timeout=config.timeout_minutes * 60):
                     task = future_to_task[future]
                     try:
                         result = future.result()
                         results.append(result)
-                        
+
                         if len(results) % 10 == 0:
                             logger.info(f"Completed {len(results)}/{len(experiment_tasks)} experiments")
-                            
+
                     except Exception as e:
                         logger.warning(f"Experiment failed: {task['algorithm']}/{task['benchmark']}/dim{task['dimension']}/trial{task['trial']} - {e}")
-                        
+
                         # Create failure result
                         failure_result = ValidationResult(
                             config_name=config.name,
@@ -348,7 +348,7 @@ class ResearchValidationPipeline:
                             dimension=task["dimension"],
                             trial_id=task["trial"],
                             execution_time=0.0,
-                            final_value=float('inf'),
+                            final_value=float("inf"),
                             convergence_history=[],
                             function_evaluations=0,
                             success=False,
@@ -363,15 +363,15 @@ class ResearchValidationPipeline:
                 try:
                     result = self._execute_single_experiment(task)
                     results.append(result)
-                    
+
                     if (i + 1) % 10 == 0:
                         logger.info(f"Completed {i + 1}/{len(experiment_tasks)} experiments")
-                        
+
                 except Exception as e:
                     logger.warning(f"Experiment failed: {task['algorithm']}/{task['benchmark']}/dim{task['dimension']}/trial{task['trial']} - {e}")
-        
+
         return results
-    
+
     def _execute_single_experiment(self, task: Dict[str, Any]) -> ValidationResult:
         """Execute a single experiment."""
         algorithm_name = task["algorithm"]
@@ -379,25 +379,25 @@ class ResearchValidationPipeline:
         dimension = task["dimension"]
         trial_id = task["trial"]
         config = task["config"]
-        
+
         start_time = time.time()
-        
+
         try:
             # Get algorithm class
             if algorithm_name not in self.algorithm_registry:
                 raise ValueError(f"Unknown algorithm: {algorithm_name}")
-            
+
             algorithm_class = self.algorithm_registry[algorithm_name]
-            
+
             # Get benchmark function
             benchmark_func = self.benchmark_suite.get_benchmark_function(benchmark_name, dimension)
             bounds = self.benchmark_suite.get_bounds(benchmark_name, dimension)
-            
+
             # Create algorithm instance
             algorithm = algorithm_class()
-            
+
             # Execute optimization
-            if hasattr(algorithm, 'optimize'):
+            if hasattr(algorithm, "optimize"):
                 # Standard optimization interface
                 x0 = jnp.array([(b[0] + b[1]) / 2 for b in bounds])
                 result = algorithm.optimize(
@@ -406,18 +406,18 @@ class ResearchValidationPipeline:
                     bounds=bounds,
                     n_iterations=100,  # Standard iteration count
                 )
-                
+
                 final_value = float(result.fun)
-                convergence_history = getattr(result, 'convergence_history', [])
-                function_evaluations = getattr(result, 'nfev', 100)
-                success = getattr(result, 'success', True)
-                
+                convergence_history = getattr(result, "convergence_history", [])
+                function_evaluations = getattr(result, "nfev", 100)
+                success = getattr(result, "success", True)
+
             else:
                 # Custom algorithm interface
                 raise NotImplementedError(f"Algorithm {algorithm_name} does not implement standard interface")
-            
+
             execution_time = time.time() - start_time
-            
+
             return ValidationResult(
                 config_name=config.name,
                 algorithm_name=algorithm_name,
@@ -432,14 +432,14 @@ class ResearchValidationPipeline:
                 error_message=None,
                 metadata={
                     "bounds": [list(b) for b in bounds],
-                    "initial_point": x0.tolist() if 'x0' in locals() else None,
+                    "initial_point": x0.tolist() if "x0" in locals() else None,
                 },
                 timestamp=datetime.now(),
             )
-            
+
         except Exception as e:
             execution_time = time.time() - start_time
-            
+
             return ValidationResult(
                 config_name=config.name,
                 algorithm_name=algorithm_name,
@@ -447,7 +447,7 @@ class ResearchValidationPipeline:
                 dimension=dimension,
                 trial_id=trial_id,
                 execution_time=execution_time,
-                final_value=float('inf'),
+                final_value=float("inf"),
                 convergence_history=[],
                 function_evaluations=0,
                 success=False,
@@ -455,11 +455,11 @@ class ResearchValidationPipeline:
                 metadata={},
                 timestamp=datetime.now(),
             )
-    
+
     def _perform_statistical_analysis(self, results: List[ValidationResult], config: ValidationConfig) -> List[StatisticalAnalysis]:
         """Perform comprehensive statistical analysis."""
         statistical_results = []
-        
+
         # Group results by algorithm, benchmark, and dimension
         groups = {}
         for result in results:
@@ -467,19 +467,19 @@ class ResearchValidationPipeline:
             if key not in groups:
                 groups[key] = []
             groups[key].append(result)
-        
+
         for (algorithm, benchmark, dimension), group_results in groups.items():
             if not group_results:
                 continue
-            
+
             # Extract performance values
             successful_results = [r for r in group_results if r.success]
             all_values = [r.final_value for r in group_results]
             successful_values = [r.final_value for r in successful_results]
-            
+
             if not successful_values:
                 continue
-            
+
             # Basic statistics
             values_array = np.array(successful_values)
             mean_perf = float(np.mean(values_array))
@@ -488,7 +488,7 @@ class ResearchValidationPipeline:
             best_perf = float(np.min(values_array))
             worst_perf = float(np.max(values_array))
             success_rate = len(successful_results) / len(group_results)
-            
+
             # Confidence interval
             confidence_interval = stats.t.interval(
                 config.confidence_level,
@@ -496,10 +496,10 @@ class ResearchValidationPipeline:
                 loc=mean_perf,
                 scale=stats.sem(values_array)
             )
-            
+
             # Statistical tests
             statistical_tests = {}
-            
+
             # Normality test
             if len(values_array) >= 3:
                 shapiro_stat, shapiro_p = stats.shapiro(values_array)
@@ -509,7 +509,7 @@ class ResearchValidationPipeline:
                     "p_value": float(shapiro_p),
                     "is_normal": shapiro_p > config.significance_threshold,
                 }
-            
+
             # Convergence analysis
             convergence_rates = []
             for result in successful_results:
@@ -519,14 +519,14 @@ class ResearchValidationPipeline:
                     if abs(initial_val) > 1e-10:
                         conv_rate = (initial_val - final_val) / abs(initial_val)
                         convergence_rates.append(conv_rate)
-            
+
             if convergence_rates:
                 statistical_tests["convergence"] = {
                     "mean_rate": float(np.mean(convergence_rates)),
                     "std_rate": float(np.std(convergence_rates)),
                     "median_rate": float(np.median(convergence_rates)),
                 }
-            
+
             statistical_analysis = StatisticalAnalysis(
                 algorithm=algorithm,
                 benchmark=benchmark,
@@ -543,15 +543,15 @@ class ResearchValidationPipeline:
                 effect_sizes={},  # Will be computed in comparative analysis
                 rankings={},  # Will be computed in comparative analysis
             )
-            
+
             statistical_results.append(statistical_analysis)
-        
+
         return statistical_results
-    
+
     def _perform_comparative_analysis(self, statistical_results: List[StatisticalAnalysis], config: ValidationConfig) -> List[ComparativeAnalysis]:
         """Perform comparative analysis between algorithms."""
         comparative_results = []
-        
+
         # Group by benchmark and dimension
         benchmark_groups = {}
         for stat in statistical_results:
@@ -559,31 +559,31 @@ class ResearchValidationPipeline:
             if key not in benchmark_groups:
                 benchmark_groups[key] = {}
             benchmark_groups[key][stat.algorithm] = stat
-        
+
         for (benchmark, dimension), algorithm_stats in benchmark_groups.items():
             if len(algorithm_stats) < 2:
                 continue  # Need at least 2 algorithms to compare
-            
+
             algorithms = list(algorithm_stats.keys())
             pairwise_comparisons = {}
             statistical_significance = {}
             effect_sizes = {}
-            
+
             # Perform pairwise comparisons
             for i, alg1 in enumerate(algorithms):
                 for j, alg2 in enumerate(algorithms[i+1:], i+1):
                     stat1 = algorithm_stats[alg1]
                     stat2 = algorithm_stats[alg2]
-                    
+
                     # Get raw data for statistical tests (simplified - would need actual results)
                     # For now, use summary statistics for effect size estimation
-                    
+
                     # Cohen's d effect size
                     pooled_std = np.sqrt((stat1.std_performance**2 + stat2.std_performance**2) / 2)
                     cohens_d = (stat1.mean_performance - stat2.mean_performance) / pooled_std if pooled_std > 0 else 0
-                    
+
                     effect_sizes[(alg1, alg2)] = float(cohens_d)
-                    
+
                     # Simplified significance test (would use actual data in practice)
                     # Using Welch's t-test approximation
                     if stat1.n_trials >= 2 and stat2.n_trials >= 2:
@@ -592,14 +592,14 @@ class ResearchValidationPipeline:
                         )
                         df_approx = max(1, stat1.n_trials + stat2.n_trials - 2)
                         p_value = 2 * (1 - stats.t.cdf(abs(t_stat), df_approx))
-                        
+
                         is_significant = p_value < config.significance_threshold
                     else:
                         is_significant = False
                         p_value = 1.0
-                    
+
                     statistical_significance[(alg1, alg2)] = is_significant
-                    
+
                     pairwise_comparisons[(alg1, alg2)] = {
                         "mean_difference": stat1.mean_performance - stat2.mean_performance,
                         "effect_size": cohens_d,
@@ -607,25 +607,25 @@ class ResearchValidationPipeline:
                         "significant": is_significant,
                         "winner": alg1 if stat1.mean_performance < stat2.mean_performance else alg2,
                     }
-            
+
             # Overall ranking (by mean performance, lower is better)
             algorithm_performances = [(alg, stats.mean_performance) for alg, stats in algorithm_stats.items()]
             overall_ranking = sorted(algorithm_performances, key=lambda x: x[1])
-            
+
             # Power analysis (simplified)
             power_analysis = {}
             for alg in algorithms:
                 stat = algorithm_stats[alg]
                 # Simplified power calculation
                 power_analysis[alg] = min(1.0, stat.n_trials / 30.0)  # Rough approximation
-            
+
             # Generate summary
             best_algorithm = overall_ranking[0][0]
             best_performance = overall_ranking[0][1]
-            
+
             summary = (f"Best algorithm: {best_algorithm} (mean: {best_performance:.6f}). "
                       f"Significant differences found: {sum(statistical_significance.values())} out of {len(statistical_significance)} comparisons.")
-            
+
             comparative_analysis = ComparativeAnalysis(
                 algorithms=algorithms,
                 benchmark=benchmark,
@@ -637,36 +637,36 @@ class ResearchValidationPipeline:
                 power_analysis=power_analysis,
                 summary=summary,
             )
-            
+
             comparative_results.append(comparative_analysis)
-        
+
         return comparative_results
-    
-    def _generate_reports(self, raw_results: List[ValidationResult], statistical_results: List[StatisticalAnalysis], 
+
+    def _generate_reports(self, raw_results: List[ValidationResult], statistical_results: List[StatisticalAnalysis],
                          comparative_results: List[ComparativeAnalysis], config: ValidationConfig) -> Dict[str, str]:
         """Generate comprehensive validation reports."""
         reports = {}
-        
+
         # Generate summary report
         summary_report = self._generate_summary_report(raw_results, statistical_results, comparative_results, config)
         reports["summary"] = summary_report
-        
+
         # Generate statistical report
         statistical_report = self._generate_statistical_report(statistical_results, config)
         reports["statistical"] = statistical_report
-        
+
         # Generate comparative report
         comparative_report = self._generate_comparative_report(comparative_results, config)
         reports["comparative"] = comparative_report
-        
+
         # Generate LaTeX report if requested
         if "latex" in config.output_formats:
             latex_report = self._generate_latex_report(raw_results, statistical_results, comparative_results, config)
             reports["latex"] = latex_report
-        
+
         return reports
-    
-    def _generate_summary_report(self, raw_results: List[ValidationResult], statistical_results: List[StatisticalAnalysis], 
+
+    def _generate_summary_report(self, raw_results: List[ValidationResult], statistical_results: List[StatisticalAnalysis],
                                 comparative_results: List[ComparativeAnalysis], config: ValidationConfig) -> str:
         """Generate summary validation report."""
         report = []
@@ -677,12 +677,12 @@ class ResearchValidationPipeline:
         report.append(f"Domain: {config.domain.value}")
         report.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         report.append("")
-        
+
         # Experiment overview
         total_experiments = len(raw_results)
         successful_experiments = sum(1 for r in raw_results if r.success)
         success_rate = successful_experiments / total_experiments if total_experiments > 0 else 0
-        
+
         report.append("EXPERIMENT OVERVIEW")
         report.append("-" * 20)
         report.append(f"Total experiments: {total_experiments}")
@@ -693,11 +693,11 @@ class ResearchValidationPipeline:
         report.append(f"Dimensions: {config.dimensions}")
         report.append(f"Trials per configuration: {config.n_trials}")
         report.append("")
-        
+
         # Statistical analysis summary
         report.append("STATISTICAL ANALYSIS SUMMARY")
         report.append("-" * 30)
-        
+
         if statistical_results:
             # Best performing algorithms
             best_performers = {}
@@ -705,28 +705,28 @@ class ResearchValidationPipeline:
                 key = f"{stat.benchmark}_d{stat.dimension}"
                 if key not in best_performers or stat.mean_performance < best_performers[key][1]:
                     best_performers[key] = (stat.algorithm, stat.mean_performance)
-            
+
             report.append("Best performers by problem:")
             for problem, (algorithm, performance) in best_performers.items():
                 report.append(f"  {problem}: {algorithm} ({performance:.6f})")
             report.append("")
-        
+
         # Comparative analysis summary
         report.append("COMPARATIVE ANALYSIS SUMMARY")
         report.append("-" * 30)
-        
+
         if comparative_results:
             total_comparisons = sum(len(comp.pairwise_comparisons) for comp in comparative_results)
             significant_differences = sum(sum(comp.statistical_significance.values()) for comp in comparative_results)
-            
+
             report.append(f"Total pairwise comparisons: {total_comparisons}")
             report.append(f"Statistically significant differences: {significant_differences}")
-            
+
             if total_comparisons > 0:
                 significance_rate = significant_differences / total_comparisons
                 report.append(f"Significance rate: {significance_rate:.1%}")
             report.append("")
-        
+
         # Key findings
         report.append("KEY FINDINGS")
         report.append("-" * 12)
@@ -738,22 +738,22 @@ class ResearchValidationPipeline:
         elif success_rate < 0.8:
             report.append("• Lower success rate suggests potential algorithmic issues")
         report.append("")
-        
+
         return "\n".join(report)
-    
+
     def _generate_statistical_report(self, statistical_results: List[StatisticalAnalysis], config: ValidationConfig) -> str:
         """Generate detailed statistical report."""
         report = []
         report.append("STATISTICAL ANALYSIS REPORT")
         report.append("=" * 30)
         report.append("")
-        
+
         for stat in statistical_results:
             report.append(f"Algorithm: {stat.algorithm}")
             report.append(f"Benchmark: {stat.benchmark} (dimension {stat.dimension})")
             report.append(f"Sample size: {stat.n_trials}")
             report.append("")
-            
+
             report.append("Performance Statistics:")
             report.append(f"  Mean: {stat.mean_performance:.6f}")
             report.append(f"  Std: {stat.std_performance:.6f}")
@@ -761,41 +761,41 @@ class ResearchValidationPipeline:
             report.append(f"  Best: {stat.best_performance:.6f}")
             report.append(f"  Worst: {stat.worst_performance:.6f}")
             report.append(f"  Success rate: {stat.success_rate:.1%}")
-            
+
             if stat.confidence_interval:
                 ci_lower, ci_upper = stat.confidence_interval
                 report.append(f"  {config.confidence_level:.1%} CI: [{ci_lower:.6f}, {ci_upper:.6f}]")
             report.append("")
-            
+
             if stat.statistical_tests:
                 report.append("Statistical Tests:")
                 for test_name, test_result in stat.statistical_tests.items():
                     report.append(f"  {test_name}: {test_result}")
                 report.append("")
-            
+
             report.append("-" * 50)
             report.append("")
-        
+
         return "\n".join(report)
-    
+
     def _generate_comparative_report(self, comparative_results: List[ComparativeAnalysis], config: ValidationConfig) -> str:
         """Generate comparative analysis report."""
         report = []
         report.append("COMPARATIVE ANALYSIS REPORT")
         report.append("=" * 30)
         report.append("")
-        
+
         for comp in comparative_results:
             report.append(f"Benchmark: {comp.benchmark} (dimension {comp.dimension})")
             report.append(f"Algorithms: {', '.join(comp.algorithms)}")
             report.append("")
-            
+
             # Overall ranking
             report.append("Overall Ranking:")
             for i, (algorithm, score) in enumerate(comp.overall_ranking, 1):
                 report.append(f"  {i}. {algorithm}: {score:.6f}")
             report.append("")
-            
+
             # Pairwise comparisons
             report.append("Pairwise Comparisons:")
             for (alg1, alg2), comparison in comp.pairwise_comparisons.items():
@@ -805,18 +805,18 @@ class ResearchValidationPipeline:
                 report.append(f"    Effect size (Cohen's d): {comparison['effect_size']:.3f}")
                 report.append(f"    P-value: {comparison['p_value']:.6f}")
             report.append("")
-            
+
             report.append(f"Summary: {comp.summary}")
             report.append("-" * 50)
             report.append("")
-        
+
         return "\n".join(report)
-    
-    def _generate_latex_report(self, raw_results: List[ValidationResult], statistical_results: List[StatisticalAnalysis], 
+
+    def _generate_latex_report(self, raw_results: List[ValidationResult], statistical_results: List[StatisticalAnalysis],
                               comparative_results: List[ComparativeAnalysis], config: ValidationConfig) -> str:
         """Generate LaTeX report for publication."""
         latex_content = []
-        
+
         latex_content.append(r"\documentclass{article}")
         latex_content.append(r"\usepackage{booktabs}")
         latex_content.append(r"\usepackage{amsmath}")
@@ -827,18 +827,18 @@ class ResearchValidationPipeline:
         latex_content.append(r"\begin{document}")
         latex_content.append(r"\maketitle")
         latex_content.append("")
-        
+
         latex_content.append(r"\section{Abstract}")
         latex_content.append(config.description)
         latex_content.append("")
-        
+
         latex_content.append(r"\section{Methodology}")
         latex_content.append(f"We conducted a comprehensive evaluation of {len(config.algorithms_to_test)} ")
         latex_content.append(f"optimization algorithms on {len(config.benchmark_functions)} benchmark functions ")
         latex_content.append(f"with dimensions {config.dimensions}. Each configuration was tested with ")
         latex_content.append(f"{config.n_trials} independent trials.")
         latex_content.append("")
-        
+
         # Results table
         if statistical_results:
             latex_content.append(r"\section{Results}")
@@ -848,97 +848,97 @@ class ResearchValidationPipeline:
             latex_content.append(r"\toprule")
             latex_content.append(r"Algorithm & Benchmark & Dimension & Mean & Std \\")
             latex_content.append(r"\midrule")
-            
+
             for stat in statistical_results[:10]:  # Limit for space
                 alg = stat.algorithm.replace("_", r"\_")
                 bench = stat.benchmark.replace("_", r"\_")
                 latex_content.append(f"{alg} & {bench} & {stat.dimension} & "
                                    f"{stat.mean_performance:.3f} & {stat.std_performance:.3f} \\\\")
-            
+
             latex_content.append(r"\bottomrule")
             latex_content.append(r"\end{tabular}")
             latex_content.append(r"\caption{Performance summary}")
             latex_content.append(r"\end{table}")
             latex_content.append("")
-        
+
         latex_content.append(r"\section{Conclusions}")
         latex_content.append("The experimental results demonstrate the effectiveness of the proposed algorithms.")
         latex_content.append("")
-        
+
         latex_content.append(r"\end{document}")
-        
+
         return "\n".join(latex_content)
-    
-    def _save_results(self, raw_results: List[ValidationResult], statistical_results: List[StatisticalAnalysis], 
+
+    def _save_results(self, raw_results: List[ValidationResult], statistical_results: List[StatisticalAnalysis],
                      comparative_results: List[ComparativeAnalysis], reports: Dict[str, str], config: ValidationConfig):
         """Save all validation results to files."""
         study_dir = self.output_dir / config.name
         study_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Save raw results
         if "json" in config.output_formats:
             raw_data = [asdict(result) for result in raw_results]
             with open(study_dir / "raw_results.json", "w") as f:
                 json.dump(raw_data, f, indent=2, default=str)
-        
+
         # Save statistical results
         if "json" in config.output_formats:
             statistical_data = [asdict(result) for result in statistical_results]
             with open(study_dir / "statistical_results.json", "w") as f:
                 json.dump(statistical_data, f, indent=2, default=str)
-        
+
         # Save comparative results
         if "json" in config.output_formats:
             comparative_data = [asdict(result) for result in comparative_results]
             with open(study_dir / "comparative_results.json", "w") as f:
                 json.dump(comparative_data, f, indent=2, default=str)
-        
+
         # Save reports
         for report_name, report_content in reports.items():
             if report_name == "latex":
                 filename = "report.tex"
             else:
                 filename = f"{report_name}_report.txt"
-            
+
             with open(study_dir / filename, "w") as f:
                 f.write(report_content)
-        
+
         # Save CSV data if requested
         if "csv" in config.output_formats:
             import pandas as pd
-            
+
             # Raw results CSV
             raw_df = pd.DataFrame([asdict(r) for r in raw_results])
             raw_df.to_csv(study_dir / "raw_results.csv", index=False)
-            
+
             # Statistical results CSV
             statistical_df = pd.DataFrame([asdict(s) for s in statistical_results])
             statistical_df.to_csv(study_dir / "statistical_results.csv", index=False)
-        
+
         logger.info(f"Results saved to {study_dir}")
-    
+
     def get_validation_history(self) -> List[Dict[str, Any]]:
         """Get history of validation studies."""
         return self.validation_history.copy()
-    
+
     def get_algorithm_rankings(self, benchmark: str = None, dimension: int = None) -> Dict[str, float]:
         """Get algorithm rankings across all validation studies."""
         rankings = defaultdict(list)
-        
+
         for validation in self.validation_history:
             if validation.get("status") != ValidationStatus.COMPLETED.value:
                 continue
-            
+
             # This would analyze saved results to compute rankings
             # Simplified implementation
             for algorithm in validation.get("statistical_analysis", {}):
                 rankings[algorithm].append(1.0)  # Placeholder
-        
+
         # Compute average rankings
         avg_rankings = {}
         for algorithm, scores in rankings.items():
             avg_rankings[algorithm] = sum(scores) / len(scores) if scores else 0.0
-        
+
         return dict(sorted(avg_rankings.items(), key=lambda x: x[1], reverse=True))
 
 
@@ -952,7 +952,7 @@ def run_algorithm_validation(
 ) -> Dict[str, Any]:
     """Run a standard algorithm validation study."""
     pipeline = ResearchValidationPipeline(output_dir=output_dir)
-    
+
     config = pipeline.create_validation_config(
         name="algorithm_validation",
         description="Standard algorithm validation study",
@@ -962,7 +962,7 @@ def run_algorithm_validation(
         dimensions=dimensions,
         n_trials=n_trials,
     )
-    
+
     return pipeline.run_validation(config)
 
 
@@ -976,9 +976,9 @@ def run_comparative_study(
 ) -> Dict[str, Any]:
     """Run a comparative study between novel and baseline algorithms."""
     pipeline = ResearchValidationPipeline(output_dir=output_dir)
-    
+
     all_algorithms = novel_algorithms + baseline_algorithms
-    
+
     config = pipeline.create_validation_config(
         name="comparative_study",
         description="Comparative study between novel and baseline algorithms",
@@ -990,5 +990,5 @@ def run_comparative_study(
         statistical_tests=["mannwhitneyu", "kruskal", "friedman", "wilcoxon"],
         comparison_baselines=baseline_algorithms,
     )
-    
+
     return pipeline.run_validation(config)

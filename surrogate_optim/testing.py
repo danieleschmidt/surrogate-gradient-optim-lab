@@ -1,14 +1,13 @@
 """Comprehensive testing framework for surrogate optimization."""
 
+from dataclasses import dataclass, field
+import json
+from pathlib import Path
 import time
 import traceback
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-from dataclasses import dataclass, field
-from pathlib import Path
-import json
+from typing import Any, Callable, Dict, List, Optional
 
 import jax.numpy as jnp
-from jax import Array
 
 
 @dataclass
@@ -42,7 +41,7 @@ class TestResult:
 
 class SurrogateTestSuite:
     """Comprehensive test suite for surrogate optimization components."""
-    
+
     def __init__(self, output_dir: Optional[Path] = None):
         """Initialize test suite.
         
@@ -51,24 +50,24 @@ class SurrogateTestSuite:
         """
         self.output_dir = Path(output_dir) if output_dir else Path("test_results")
         self.output_dir.mkdir(exist_ok=True)
-        
+
         self.test_cases = {}
         self.test_results = []
         self.setup_functions = []
         self.teardown_functions = []
-    
+
     def add_test(self, test_case: TestCase):
         """Add a test case to the suite."""
         self.test_cases[test_case.test_id] = test_case
-    
+
     def add_setup(self, setup_func: Callable):
         """Add a setup function to run before tests."""
         self.setup_functions.append(setup_func)
-    
+
     def add_teardown(self, teardown_func: Callable):
         """Add a teardown function to run after tests."""
         self.teardown_functions.append(teardown_func)
-    
+
     def run_test(self, test_case: TestCase) -> TestResult:
         """Run a single test case.
         
@@ -79,12 +78,12 @@ class SurrogateTestSuite:
             Test result
         """
         start_time = time.time()
-        
+
         try:
             # Execute test function
             actual_result = test_case.test_function()
             execution_time = time.time() - start_time
-            
+
             # Check result
             if test_case.expected_result is not None:
                 passed = self._compare_results(
@@ -97,7 +96,7 @@ class SurrogateTestSuite:
                 # If no expected result, assume test passes if no exception
                 passed = True
                 error_message = None
-            
+
             return TestResult(
                 test_id=test_case.test_id,
                 test_name=test_case.test_name,
@@ -108,7 +107,7 @@ class SurrogateTestSuite:
                 expected_result=test_case.expected_result,
                 tolerance=test_case.tolerance
             )
-            
+
         except Exception as e:
             execution_time = time.time() - start_time
             return TestResult(
@@ -119,7 +118,7 @@ class SurrogateTestSuite:
                 error_message=str(e),
                 metadata={"traceback": traceback.format_exc()}
             )
-    
+
     def run_all_tests(
         self,
         filter_tags: Optional[List[str]] = None,
@@ -143,20 +142,20 @@ class SurrogateTestSuite:
             if filter_tags:
                 if not any(tag in test_case.tags for tag in filter_tags):
                     continue
-            
+
             # Check exclude tags
             if exclude_tags:
                 if any(tag in test_case.tags for tag in exclude_tags):
                     continue
-            
+
             tests_to_run.append(test_case)
-        
+
         # Run setup functions
         for setup_func in self.setup_functions:
             setup_func()
-        
+
         results = {}
-        
+
         try:
             if parallel:
                 results = self._run_tests_parallel(tests_to_run)
@@ -166,10 +165,10 @@ class SurrogateTestSuite:
             # Run teardown functions
             for teardown_func in self.teardown_functions:
                 teardown_func()
-        
+
         self.test_results.extend(results.values())
         return results
-    
+
     def _run_tests_sequential(self, test_cases: List[TestCase]) -> Dict[str, TestResult]:
         """Run tests sequentially."""
         results = {}
@@ -177,18 +176,18 @@ class SurrogateTestSuite:
             print(f"Running test: {test_case.test_name}")
             result = self.run_test(test_case)
             results[test_case.test_id] = result
-            
+
             status = "PASS" if result.passed else "FAIL"
             print(f"  {status} ({result.execution_time:.3f}s)")
             if not result.passed:
                 print(f"  Error: {result.error_message}")
-        
+
         return results
-    
+
     def _run_tests_parallel(self, test_cases: List[TestCase]) -> Dict[str, TestResult]:
         """Run tests in parallel."""
         from concurrent.futures import ThreadPoolExecutor, as_completed
-        
+
         results = {}
         with ThreadPoolExecutor(max_workers=4) as executor:
             # Submit all tests
@@ -196,17 +195,17 @@ class SurrogateTestSuite:
                 executor.submit(self.run_test, test_case): test_case
                 for test_case in test_cases
             }
-            
+
             # Collect results
             for future in as_completed(future_to_test):
                 test_case = future_to_test[future]
                 try:
                     result = future.result()
                     results[test_case.test_id] = result
-                    
+
                     status = "PASS" if result.passed else "FAIL"
                     print(f"{status}: {test_case.test_name} ({result.execution_time:.3f}s)")
-                    
+
                 except Exception as e:
                     # Create failure result
                     result = TestResult(
@@ -218,29 +217,27 @@ class SurrogateTestSuite:
                     )
                     results[test_case.test_id] = result
                     print(f"FAIL: {test_case.test_name} - {e}")
-        
+
         return results
-    
+
     def _compare_results(self, actual: Any, expected: Any, tolerance: float) -> bool:
         """Compare actual and expected results."""
         if isinstance(expected, (int, float)):
             if isinstance(actual, (int, float)):
                 return abs(actual - expected) <= tolerance
-            elif hasattr(actual, 'shape') and actual.shape == ():
+            if hasattr(actual, "shape") and actual.shape == ():
                 return abs(float(actual) - expected) <= tolerance
-            else:
-                return False
-        
-        elif hasattr(expected, 'shape'):  # JAX array or numpy array
-            if not hasattr(actual, 'shape'):
+            return False
+
+        if hasattr(expected, "shape"):  # JAX array or numpy array
+            if not hasattr(actual, "shape"):
                 return False
             if actual.shape != expected.shape:
                 return False
             return jnp.allclose(actual, expected, atol=tolerance)
-        
-        else:
-            return actual == expected
-    
+
+        return actual == expected
+
     def generate_report(self, results: Dict[str, TestResult]) -> str:
         """Generate a test report.
         
@@ -254,7 +251,7 @@ class SurrogateTestSuite:
         passed_tests = sum(1 for r in results.values() if r.passed)
         failed_tests = total_tests - passed_tests
         total_time = sum(r.execution_time for r in results.values())
-        
+
         report = []
         report.append("=" * 60)
         report.append("SURROGATE OPTIMIZATION TEST REPORT")
@@ -266,7 +263,7 @@ class SurrogateTestSuite:
         report.append(f"Total Time: {total_time:.3f}s")
         report.append(f"Average Time: {total_time/total_tests:.3f}s")
         report.append("")
-        
+
         # Failed tests
         if failed_tests > 0:
             report.append("FAILED TESTS:")
@@ -276,7 +273,7 @@ class SurrogateTestSuite:
                     report.append(f"❌ {result.test_name}")
                     report.append(f"   Error: {result.error_message}")
                     report.append("")
-        
+
         # Passed tests
         if passed_tests > 0:
             report.append("PASSED TESTS:")
@@ -284,9 +281,9 @@ class SurrogateTestSuite:
             for result in results.values():
                 if result.passed:
                     report.append(f"✅ {result.test_name} ({result.execution_time:.3f}s)")
-        
+
         return "\n".join(report)
-    
+
     def save_results(self, results: Dict[str, TestResult], filename: Optional[str] = None):
         """Save test results to file.
         
@@ -297,9 +294,9 @@ class SurrogateTestSuite:
         if filename is None:
             timestamp = time.strftime("%Y%m%d_%H%M%S")
             filename = f"test_results_{timestamp}.json"
-        
+
         output_file = self.output_dir / filename
-        
+
         # Convert results to serializable format
         serializable_results = {}
         for test_id, result in results.items():
@@ -311,23 +308,23 @@ class SurrogateTestSuite:
                 "error_message": result.error_message,
                 "metadata": result.metadata,
             }
-        
-        with open(output_file, 'w') as f:
+
+        with open(output_file, "w") as f:
             json.dump(serializable_results, f, indent=2)
-        
+
         print(f"Test results saved to: {output_file}")
 
 
 def create_surrogate_model_tests() -> SurrogateTestSuite:
     """Create test suite for surrogate models."""
     suite = SurrogateTestSuite()
-    
+
     # Test surrogate model initialization
     def test_neural_surrogate_init():
         from .models.neural import NeuralSurrogate
         model = NeuralSurrogate(hidden_dims=[32, 16], activation="relu")
         return model is not None
-    
+
     suite.add_test(TestCase(
         test_id="neural_surrogate_init",
         test_name="Neural Surrogate Initialization",
@@ -336,25 +333,25 @@ def create_surrogate_model_tests() -> SurrogateTestSuite:
         expected_result=True,
         tags=["surrogate", "neural", "init"]
     ))
-    
+
     # Test surrogate model fitting
     def test_neural_surrogate_fit():
-        from .models.neural import NeuralSurrogate
         from .models.base import Dataset
-        
+        from .models.neural import NeuralSurrogate
+
         # Create test data
         X = jnp.array([[1.0, 2.0], [2.0, 3.0], [3.0, 4.0]])
         y = jnp.array([1.5, 2.5, 3.5])
         dataset = Dataset(X=X, y=y)
-        
+
         # Fit model
         model = NeuralSurrogate(hidden_dims=[8], activation="relu")
         model.fit(dataset)
-        
+
         # Test prediction
         pred = model.predict(X[0])
         return jnp.isfinite(pred)
-    
+
     suite.add_test(TestCase(
         test_id="neural_surrogate_fit",
         test_name="Neural Surrogate Fitting",
@@ -363,25 +360,25 @@ def create_surrogate_model_tests() -> SurrogateTestSuite:
         expected_result=True,
         tags=["surrogate", "neural", "fit"]
     ))
-    
+
     # Test gradient computation
     def test_neural_surrogate_gradient():
-        from .models.neural import NeuralSurrogate
         from .models.base import Dataset
-        
+        from .models.neural import NeuralSurrogate
+
         # Create test data
         X = jnp.array([[1.0, 2.0], [2.0, 3.0], [3.0, 4.0]])
         y = jnp.array([1.5, 2.5, 3.5])
         dataset = Dataset(X=X, y=y)
-        
+
         # Fit model
         model = NeuralSurrogate(hidden_dims=[8])
         model.fit(dataset)
-        
+
         # Test gradient
         grad = model.gradient(X[0])
         return grad.shape == (2,) and jnp.isfinite(grad).all()
-    
+
     suite.add_test(TestCase(
         test_id="neural_surrogate_gradient",
         test_name="Neural Surrogate Gradient",
@@ -390,23 +387,24 @@ def create_surrogate_model_tests() -> SurrogateTestSuite:
         expected_result=True,
         tags=["surrogate", "neural", "gradient"]
     ))
-    
+
     return suite
 
 
 def create_optimization_tests() -> SurrogateTestSuite:
     """Create test suite for optimization algorithms."""
     suite = SurrogateTestSuite()
-    
+
     # Test basic optimization
     def test_basic_optimization():
-        from .core import quick_optimize
         import jax.numpy as jnp
-        
+
+        from .core import quick_optimize
+
         # Simple quadratic function
         def quadratic(x):
             return jnp.sum((x - 1)**2)
-        
+
         try:
             result = quick_optimize(
                 function=quadratic,
@@ -415,13 +413,13 @@ def create_optimization_tests() -> SurrogateTestSuite:
                 surrogate_type="neural_network",
                 verbose=False
             )
-            
+
             # Check if we found a reasonable solution
             error = jnp.linalg.norm(result.x - jnp.array([1.0, 1.0]))
             return error < 0.5  # Allow some tolerance
         except Exception:
             return False
-    
+
     suite.add_test(TestCase(
         test_id="basic_optimization",
         test_name="Basic Optimization",
@@ -431,21 +429,21 @@ def create_optimization_tests() -> SurrogateTestSuite:
         timeout=60.0,
         tags=["optimization", "integration"]
     ))
-    
+
     # Test multi-start optimization
     def test_multi_start_optimization():
-        from .optimizers.multi_start import MultiStartOptimizer
-        from .models.neural import NeuralSurrogate
         from .models.base import Dataset
-        
+        from .models.neural import NeuralSurrogate
+        from .optimizers.multi_start import MultiStartOptimizer
+
         # Create test surrogate
         X = jnp.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]])
         y = jnp.array([0.0, 2.0, 8.0])  # x^2 + y^2
         dataset = Dataset(X=X, y=y)
-        
+
         surrogate = NeuralSurrogate(hidden_dims=[8])
         surrogate.fit(dataset)
-        
+
         # Test multi-start optimization
         optimizer = MultiStartOptimizer(n_starts=3)
         result = optimizer.optimize(
@@ -453,9 +451,9 @@ def create_optimization_tests() -> SurrogateTestSuite:
             x0=jnp.array([1.0, 1.0]),
             bounds=[(-2, 2), (-2, 2)]
         )
-        
+
         return result.success
-    
+
     suite.add_test(TestCase(
         test_id="multi_start_optimization",
         test_name="Multi-Start Optimization",
@@ -464,27 +462,27 @@ def create_optimization_tests() -> SurrogateTestSuite:
         expected_result=True,
         tags=["optimization", "multi_start"]
     ))
-    
+
     return suite
 
 
 def create_benchmarking_tests() -> SurrogateTestSuite:
     """Create test suite for benchmarking functionality."""
     suite = SurrogateTestSuite()
-    
+
     def test_benchmark_functions():
         import sys
-        sys.path.append('/root/repo')
+        sys.path.append("/root/repo")
         from tests.fixtures.benchmark_functions import Rosenbrock
-        
+
         # Test benchmark function
         func = Rosenbrock(2)
         x = jnp.array([1.0, 1.0])  # Global optimum
         value = func(x)
-        
+
         # Should be close to 0 at global optimum
         return abs(value) < 1e-6
-    
+
     suite.add_test(TestCase(
         test_id="benchmark_functions",
         test_name="Benchmark Functions",
@@ -493,16 +491,16 @@ def create_benchmarking_tests() -> SurrogateTestSuite:
         expected_result=True,
         tags=["benchmark", "functions"]
     ))
-    
+
     def test_quick_benchmark():
         from .benchmarks import run_quick_benchmark
-        
+
         try:
             results = run_quick_benchmark()
             return len(results.benchmark_results) > 0
         except Exception:
             return False
-    
+
     suite.add_test(TestCase(
         test_id="quick_benchmark",
         test_name="Quick Benchmark",
@@ -512,26 +510,26 @@ def create_benchmarking_tests() -> SurrogateTestSuite:
         timeout=120.0,
         tags=["benchmark", "integration", "slow"]
     ))
-    
+
     return suite
 
 
 def create_robustness_tests() -> SurrogateTestSuite:
     """Create test suite for robustness features."""
     suite = SurrogateTestSuite()
-    
+
     def test_input_validation():
         from .security import InputValidator
-        
+
         validator = InputValidator()
-        
+
         # Test valid input
         valid_x = jnp.array([1.0, 2.0, 3.0])
         violations = validator.validate_array(valid_x, "test_array")
-        
+
         # Should have no violations for valid input
         return len(violations) == 0
-    
+
     suite.add_test(TestCase(
         test_id="input_validation",
         test_name="Input Validation",
@@ -540,27 +538,27 @@ def create_robustness_tests() -> SurrogateTestSuite:
         expected_result=True,
         tags=["robustness", "security"]
     ))
-    
+
     def test_robust_surrogate():
-        from .robustness import RobustSurrogate
-        from .models.neural import NeuralSurrogate
         from .models.base import Dataset
-        
+        from .models.neural import NeuralSurrogate
+        from .robustness import RobustSurrogate
+
         # Create test data
         X = jnp.array([[1.0, 2.0], [2.0, 3.0], [3.0, 4.0]])
         y = jnp.array([1.5, 2.5, 3.5])
         dataset = Dataset(X=X, y=y)
-        
+
         # Create robust surrogate
         base_model = NeuralSurrogate(hidden_dims=[8])
         robust_model = RobustSurrogate(base_model)
-        
+
         # Fit and predict
         robust_model.fit(dataset)
         pred = robust_model.predict(X[0])
-        
+
         return jnp.isfinite(pred)
-    
+
     suite.add_test(TestCase(
         test_id="robust_surrogate",
         test_name="Robust Surrogate",
@@ -569,7 +567,7 @@ def create_robustness_tests() -> SurrogateTestSuite:
         expected_result=True,
         tags=["robustness", "surrogate"]
     ))
-    
+
     return suite
 
 
@@ -589,7 +587,7 @@ def run_comprehensive_tests(
         Test summary
     """
     print("Running comprehensive surrogate optimization tests...")
-    
+
     # Create test suites
     suites = [
         create_surrogate_model_tests(),
@@ -597,38 +595,38 @@ def run_comprehensive_tests(
         create_benchmarking_tests(),
         create_robustness_tests(),
     ]
-    
+
     all_results = {}
-    
+
     for i, suite in enumerate(suites):
         print(f"\n--- Running Test Suite {i+1}/{len(suites)} ---")
-        
+
         # Configure test filters
         exclude_tags = []
         if not include_slow:
             exclude_tags.append("slow")
-        
+
         # Run tests
         results = suite.run_all_tests(
             exclude_tags=exclude_tags,
             parallel=parallel
         )
-        
+
         all_results.update(results)
-        
+
         # Generate and print report
         report = suite.generate_report(results)
         print(report)
-        
+
         # Save results
         if output_dir:
             suite.output_dir = Path(output_dir)
             suite.save_results(results, f"suite_{i+1}_results.json")
-    
+
     # Overall summary
     total_tests = len(all_results)
     passed_tests = sum(1 for r in all_results.values() if r.passed)
-    
+
     summary = {
         "total_tests": total_tests,
         "passed_tests": passed_tests,
@@ -636,7 +634,7 @@ def run_comprehensive_tests(
         "success_rate": passed_tests / total_tests if total_tests > 0 else 0,
         "results": all_results
     }
-    
+
     print(f"\n{'='*60}")
     print("COMPREHENSIVE TEST SUMMARY")
     print(f"{'='*60}")
@@ -644,5 +642,5 @@ def run_comprehensive_tests(
     print(f"Passed: {passed_tests}")
     print(f"Failed: {total_tests - passed_tests}")
     print(f"Success Rate: {passed_tests/total_tests*100:.1f}%")
-    
+
     return summary
