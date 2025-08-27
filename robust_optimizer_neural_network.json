@@ -1,0 +1,14 @@
+{
+  "config": {
+    "surrogate_type": "neural_network",
+    "validation_enabled": true,
+    "circuit_breaker_enabled": true
+  },
+  "is_fitted": true,
+  "metrics": {
+    "fit_time": 69.10864329338074,
+    "predict_calls": 1776,
+    "optimization_time": 0.40370941162109375,
+    "errors": []
+  }
+}
