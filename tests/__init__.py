@@ -1,1 +1,0 @@
-"""Test suite for Surrogate Gradient Optimization Lab."""

@@ -1,1 +1,0 @@
-"""Integration tests for Surrogate Gradient Optimization Lab."""
