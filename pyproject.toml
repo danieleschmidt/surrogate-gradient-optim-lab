@@ -84,7 +84,7 @@ gpu = [
 benchmark = [
     "memory-profiler>=0.60.0",
     "line-profiler>=4.0.0",
-    "py-spy>=0.3.0",
+    "py-spy>=0.4.1",
     "psutil>=5.9.0",
 ]
 
