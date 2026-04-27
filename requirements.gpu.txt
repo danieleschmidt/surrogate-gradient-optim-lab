@@ -36,7 +36,7 @@ py-spy>=0.3.0
 
 # GPU monitoring (NVIDIA)
 nvidia-ml-py3>=7.352.0
-pynvml>=11.0.0
+pynvml>=11.5.3
 
 # Additional research tools
 jupyter>=1.0.0
